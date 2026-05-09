@@ -45,10 +45,6 @@ function Landing() {
         <Categories />
         <Featured />
         <RequestedByStudents />
-        <FeaturedDeals />
-        <HowItWorks />
-        <Features />
-        <Testimonials />
         <CTA />
       </main>
       <Footer />
