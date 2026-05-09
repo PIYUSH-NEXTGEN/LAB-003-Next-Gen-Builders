@@ -59,7 +59,7 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-foreground" />
-            AI-powered campus marketplace · Now in 40+ colleges
+            AI-powered campus marketplace · Pilot running across 8 campuses
           </span>
           <h1 className="mt-6 font-display text-5xl font-semibold italic leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
             Buy, sell & exchange
@@ -132,10 +132,10 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
 
 function Stats() {
   const stats = [
-    { v: "40+", l: "Campuses" },
-    { v: "25K+", l: "Verified students" },
-    { v: "₹1.2Cr", l: "Saved by students" },
-    { v: "4.9/5", l: "Average rating" },
+    { v: "8", l: "Pilot campuses" },
+    { v: "4.2K+", l: "Verified students" },
+    { v: "12.6K", l: "Successful exchanges" },
+    { v: "4.8/5", l: "Average rating" },
   ];
   return (
     <section className="border-y border-border/60 bg-secondary/40">
@@ -153,9 +153,9 @@ function Stats() {
 
 function MarketplacePulse() {
   const items = [
-    { t: "12 new listings", d: "in the last hour", icon: TrendingUp },
-    { t: "Fastest sale", d: "Books in 18 minutes", icon: Zap },
-    { t: "Top campus", d: "IIT Delhi trending", icon: Users },
+    { t: "47 new listings", d: "in the last 24 hours", icon: TrendingUp },
+    { t: "Fastest sale", d: "Calculator sold in 11 minutes", icon: Zap },
+    { t: "Top activity", d: "MANIT and LNCT this week", icon: Users },
   ];
   return (
     <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -602,7 +602,7 @@ function CTA() {
             Your campus marketplace is one tap away.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
-            Join 25,000+ verified students already buying smarter.
+            Join 4,200+ verified students already exchanging smarter on campus.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/signup">

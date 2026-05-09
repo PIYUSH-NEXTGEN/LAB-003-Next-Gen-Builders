@@ -304,19 +304,27 @@ async function syncUserToMongo(user: AuthUser, env: unknown) {
 }
 
 async function completeAiChat(messages: AiChatMessage[], env: unknown) {
-  const apiKey = getEnvValue(env, "OPENROUTER_API_KEY");
-  const model = getEnvValue(env, "OPENROUTER_MODEL") ?? "meta-llama/llama-3-8b-instruct";
+  const apiKey =
+    getEnvValue(env, "OPENROUTER_API_KEY") ??
+    getEnvValue(env, "OPEN_ROUTER_API_KEY") ??
+    getEnvValue(env, "OPENROUTER_KEY");
+  const model =
+    getEnvValue(env, "OPENROUTER_MODEL") ??
+    getEnvValue(env, "OPEN_ROUTER_MODEL") ??
+    "meta-llama/llama-3.1-8b-instruct";
 
   if (!apiKey) {
-    throw new Error("Missing OPENROUTER_API_KEY.");
+    throw new Error("Missing OpenRouter key. Set OPENROUTER_API_KEY in server environment variables.");
   }
 
   const client = new OpenRouter({ apiKey });
 
   const response = await client.chat.send({
-    model,
-    stream: false,
-    messages,
+    chatRequest: {
+      model,
+      stream: false,
+      messages,
+    },
   });
 
   const text = response.choices?.[0]?.message?.content;
@@ -347,7 +355,7 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
-  if (!token) {
+  if (url.pathname !== "/api/ai/chat" && !token) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -365,8 +373,8 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
       let storedProfile: StoredUserProfile | null = null;
       try {
         storedProfile = await readUserProfileFromMongo(user.localId, env);
-      } catch (error) {
-        console.warn("User profile lookup failed, falling back to Firebase data:", error);
+      } catch {
+        storedProfile = null;
       }
 
       const responseBody: UserProfileResponse = {
@@ -419,7 +427,8 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
       });
     } catch (error) {
       console.error(error);
-      return new Response(JSON.stringify({ ok: false, error: "AI response failed." }), {
+      const message = error instanceof Error ? error.message : "AI response failed.";
+      return new Response(JSON.stringify({ ok: false, error: message }), {
         status: 500,
         headers: { "content-type": "application/json" },
       });

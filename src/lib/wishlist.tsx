@@ -23,8 +23,12 @@ export function WishlistProvider({
   products: Product[];
 }) {
   const [ids, setIds] = React.useState<Set<string>>(() => {
+    if (typeof window === "undefined") {
+      return new Set();
+    }
+
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return new Set();
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return new Set();
@@ -36,7 +40,7 @@ export function WishlistProvider({
 
   React.useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)));
     } catch {
       // ignore
     }

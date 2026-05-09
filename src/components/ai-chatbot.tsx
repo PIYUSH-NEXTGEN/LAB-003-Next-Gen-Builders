@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const SUGGESTED_PROMPTS = [
   "Find books for CSE",
@@ -18,10 +19,12 @@ interface Message {
 }
 
 export function AIChatbot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorText, setErrorText] = useState("");
 
   const addMessage = (text: string, sender: "user" | "assistant") => {
     const newMessage: Message = {
@@ -33,41 +36,66 @@ export function AIChatbot() {
     setMessages((prev) => [...prev, newMessage]);
   };
 
-  const handleSendMessage = () => {
-    if (!input.trim()) return;
+  const callAssistant = async (prompt: string) => {
+    const trimmed = prompt.trim();
+    if (!trimmed) return;
 
-    addMessage(input, "user");
+    setErrorText("");
+    addMessage(trimmed, "user");
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      const responses = [
-        "I'd love to help! Browse our CSE section to find textbooks and course materials.",
-        "Great choice! Check out our gadgets collection for budget-friendly items under ₹5,000.",
-        "Trending items this week include laptops, stationery, and gaming accessories.",
-        "Our hostel essentials collection includes bedding, storage, and room decor.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, "assistant");
+    try {
+      const token = user ? await user.getIdToken() : "";
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Campus Assistant for a student marketplace. Be concise, practical, and guide students safely.",
+            },
+            ...messages
+              .slice(-6)
+              .map((message) => ({
+                role: message.sender === "user" ? "user" : "assistant",
+                content: message.text,
+              })),
+            { role: "user", content: trimmed },
+          ],
+        }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        content?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.ok || !payload.content) {
+        throw new Error(payload.error || "AI service is currently unavailable.");
+      }
+
+      addMessage(payload.content, "assistant");
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to reach AI service.");
+      addMessage("I could not answer right now. Please try again in a moment.", "assistant");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleSendMessage = () => {
+    void callAssistant(input);
   };
 
   const handleSuggestedPrompt = (prompt: string) => {
-    addMessage(prompt, "user");
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const responses = [
-        "I'd recommend checking our filtered listings for that category!",
-        "Let me help you find exactly what you're looking for.",
-        "Great! I found several options that match your interest.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, "assistant");
-      setIsLoading(false);
-    }, 800);
+    void callAssistant(prompt);
   };
 
   return (
@@ -219,6 +247,7 @@ export function AIChatbot() {
 
             {/* Input */}
             <div className="border-t border-border/40 p-3 space-y-2">
+              {errorText ? <p className="text-[11px] text-destructive">{errorText}</p> : null}
               <div className="flex gap-2">
                 <input
                   type="text"

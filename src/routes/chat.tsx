@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Search,
   Send,
@@ -49,6 +50,7 @@ export const Route = createFileRoute("/chat")({ component: ChatPage });
 const EMOJIS = ["👍", "❤️", "😂", "🔥", "👏", "😮", "😅", "🙏", "🎉", "✅", "💯", "✨"];
 
 function ChatPage() {
+  const navigate = useNavigate();
   const socket = useMemo(() => getChatSocket(), []);
   const { user, loading: authLoading } = useAuth();
   const profileQuery = useCurrentUserProfile();
@@ -72,9 +74,6 @@ function ChatPage() {
   const [pending, setPending] = useState<ChatAttachment[]>([]);
   const [typing, setTyping] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [aiInput, setAiInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiMessages, setAiMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const activeIdRef = useRef(activeId);
   const messagesRef = useRef(messages);
 
@@ -325,54 +324,6 @@ function ChatPage() {
     typingTimerRef.current = window.setTimeout(() => setTyping(false), 1400);
   };
 
-  const sendAiMessage = async () => {
-    const prompt = aiInput.trim();
-    if (!prompt || aiLoading) return;
-
-    const nextMessages = [...aiMessages, { role: "user" as const, content: prompt }];
-    setAiMessages(nextMessages);
-    setAiInput("");
-    setAiLoading(true);
-
-    try {
-      const token = user ? await user.getIdToken() : "";
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: token ? `Bearer ${token}` : "",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a concise assistant for a campus marketplace chat. Help users draft replies, negotiate politely, and propose safe meetup wording.",
-            },
-            ...nextMessages,
-          ],
-        }),
-      });
-
-      const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; content?: string };
-      if (!response.ok || !payload.ok || !payload.content) {
-        throw new Error("AI response failed");
-      }
-
-      setAiMessages((current) => [...current, { role: "assistant", content: payload.content ?? "" }]);
-    } catch {
-      setAiMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content: "I could not respond right now. Please check your OpenRouter key setup and try again.",
-        },
-      ]);
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -396,10 +347,17 @@ function ChatPage() {
               {threads.map((c) => (
                 <li key={c.id}>
                   <button
-                    onClick={() => { setActiveId(c.id); setShowThread(true); }}
+                    onClick={() => {
+                      if ((c as any).isBot) {
+                        navigate({ to: "/ai-chat" });
+                      } else {
+                        setActiveId(c.id);
+                        setShowThread(true);
+                      }
+                    }}
                     className={cn(
                       "flex w-full items-center gap-3 border-b border-border/60 p-4 text-left transition hover:bg-secondary/40",
-                      c.id === activeId && "bg-secondary/60",
+                      c.id === activeId && !((c as any).isBot) && "bg-secondary/60",
                     )}
                   >
                     <div className="relative">
@@ -408,7 +366,10 @@ function ChatPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="truncate text-sm font-semibold">{c.name}</span>
+                        <span className="truncate text-sm font-semibold flex items-center gap-2">
+                          {(c as any).isBot && <Bot className="h-4 w-4 text-blue-500" />}
+                          {c.name}
+                        </span>
                         <span className="text-[10px] text-muted-foreground">{c.time || ""}</span>
                       </div>
                       <div className="text-[11px] text-primary">{c.product}</div>
@@ -656,52 +617,6 @@ function ChatPage() {
                 </div>
               </div>
 
-              <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-card p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold">
-                  <Bot className="h-3.5 w-3.5 text-foreground" /> AI assistant
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Draft replies, negotiation wording, and meetup messages.
-                </p>
-
-                <div className="mt-3 max-h-44 space-y-2 overflow-y-auto rounded-xl border border-border bg-background p-3">
-                  {aiMessages.length === 0 ? (
-                    <div className="text-xs text-muted-foreground">Try: "Draft a polite price negotiation reply"</div>
-                  ) : (
-                    aiMessages.map((message, index) => (
-                      <div
-                        key={`${message.role}-${index}`}
-                        className={cn(
-                          "rounded-lg px-2.5 py-2 text-xs",
-                          message.role === "user"
-                            ? "ml-6 bg-primary/10 text-foreground"
-                            : "mr-6 bg-secondary text-foreground",
-                        )}
-                      >
-                        {message.content}
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="mt-3 flex items-center gap-2">
-                  <input
-                    value={aiInput}
-                    onChange={(event) => setAiInput(event.target.value)}
-                    placeholder="Ask assistant..."
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-primary"
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        event.preventDefault();
-                        void sendAiMessage();
-                      }
-                    }}
-                  />
-                  <Button size="icon" type="button" disabled={aiLoading} onClick={() => void sendAiMessage()}>
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
               <div ref={bottomRef} />
             </div>
 

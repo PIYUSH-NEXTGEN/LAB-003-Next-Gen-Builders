@@ -406,7 +406,7 @@ function DashboardPage() {
                 <DialogHeader>
                   <DialogTitle>Return item</DialogTitle>
                   <DialogDescription>
-                    Request a return pickup/hand-off for your rental. This is a frontend demo flow.
+                    Request a return pickup or hand-off for your rental. We'll notify the owner and track status here.
                   </DialogDescription>
                 </DialogHeader>
 

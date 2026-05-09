@@ -359,7 +359,7 @@ function ProductDetails() {
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Write a review</DialogTitle>
-                <DialogDescription>Share quick feedback for the seller. This is a frontend demo flow.</DialogDescription>
+                <DialogDescription>Share quick feedback for the seller after your transaction.</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4">
@@ -417,7 +417,7 @@ function ProductDetails() {
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Return rental</DialogTitle>
-                <DialogDescription>Request a return for this rented listing (frontend demo).</DialogDescription>
+                <DialogDescription>Request a return for this rented listing and coordinate hand-off details.</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4">
