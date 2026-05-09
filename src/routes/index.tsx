@@ -30,10 +30,6 @@ function Landing() {
         <Categories />
         <Featured />
         <RequestedByStudents />
-        <FeaturedDeals />
-        <HowItWorks />
-        <Features />
-        <Testimonials />
         <CTA />
       </main>
       <Footer />
@@ -431,162 +427,11 @@ function ProvideModal({ request, onClose }: { request: ItemRequest | null; onClo
 }
 
 
-function FeaturedDeals() {
-  const deals = [
-    { t: "Featured campus deals", d: "Best value picks, updated daily", icon: BadgeCheck },
-    { t: "Meet-up friendly", d: "Library & main gate safe spots", icon: ShieldCheck },
-    { t: "Price-smart listings", d: "Discounts compared to original", icon: TrendingUp },
-  ];
-  return (
-    <section className="relative py-20 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/20 via-background to-amber-50/50 dark:from-amber-950/10 dark:via-background dark:to-amber-950/20" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(59,130,246,0.08),transparent_70%)]" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-10 flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Campus highlights</h2>
-            <p className="mt-2 text-muted-foreground">A little extra confidence before you hit “Message”.</p>
-          </div>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {deals.map((d, i) => (
-            <motion.div
-              key={d.t}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.08 }}
-              className="rounded-2xl border border-border bg-card p-7 shadow-soft hover:shadow-elegant transition-shadow"
-            >
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-secondary text-foreground">
-                <d.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold">{d.t}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{d.d}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function HowItWorks() {
-  const steps = [
-    { icon: BadgeCheck, t: "Verify your student email", d: "Sign up with your college email and get instantly verified." },
-    { icon: Search, t: "List or browse", d: "Post your item in 30 seconds, or browse curated campus listings." },
-    { icon: MessageCircle, t: "Chat & meet up", d: "Message safely and coordinate a meet-up on campus." },
-  ];
-  return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/20 via-background to-amber-50/50 dark:from-amber-950/10 dark:via-background dark:to-amber-950/20" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.08),transparent_70%)]" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">How it works</h2>
-        <p className="mt-3 text-muted-foreground">Three steps from idea to handshake.</p>
-      </div>
-      <div className="mt-14 grid gap-6 md:grid-cols-3">
-        {steps.map((s, i) => (
-          <motion.div
-            key={s.t}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="rounded-2xl border border-border bg-card p-7 shadow-soft"
-          >
-            <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-gradient text-primary-foreground">
-              <s.icon className="h-5 w-5" />
-            </div>
-            <div className="mt-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Step {i + 1}</div>
-            <h3 className="mt-1 text-lg font-semibold">{s.t}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{s.d}</p>
-          </motion.div>
-        ))}
-      </div>
-      </div>
-    </section>
-  );
-}
 
-function Features() {
-  const items = [
-    { icon: ShieldCheck, t: "Verified students only", d: "Every account is tied to a real college email — no scammers, no bots." },
-    { icon: Bot, t: "AI fair-price engine", d: "Get instant price suggestions based on condition, demand, and trends." },
-    { icon: Zap, t: "Built for speed", d: "List an item in under 30 seconds. Chat in real time. Done." },
-    { icon: TrendingUp, t: "Smart recommendations", d: "We surface what your campus actually needs, not generic noise." },
-    { icon: Users, t: "Community ratings", d: "Buyers and sellers rate each other after every meet-up." },
-    { icon: MessageCircle, t: "Safe meet-up planner", d: "Coordinate locations and times right inside the chat." },
-  ];
-  return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/20 via-background to-amber-50/50 dark:from-amber-950/10 dark:via-background dark:to-amber-950/20" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(59,130,246,0.08),transparent_70%)]" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Built for the way students actually trade</h2>
-          <p className="mt-3 text-muted-foreground">Trust, speed, and intelligence baked into every screen.</p>
-        </div>
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((f, i) => (
-            <motion.div
-              key={f.t}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-elegant"
-            >
-              <f.icon className="h-5 w-5 text-foreground" />
-              <h3 className="mt-4 font-semibold">{f.t}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{f.d}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function Testimonials() {
-  return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-50/20 via-background to-amber-50/50 dark:from-amber-950/10 dark:via-background dark:to-amber-950/20" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.08),transparent_70%)]" />
-      <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Loved by students</h2>
-          <p className="mt-3 text-muted-foreground">Real stories from verified campus users.</p>
-        </div>
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-2xl border border-border bg-card p-7 shadow-soft"
-            >
-              <div className="flex gap-0.5 text-foreground/80">
-                {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-current" />)}
-              </div>
-              <p className="mt-4 text-sm leading-relaxed">"{t.quote}"</p>
-              <div className="mt-5 flex items-center gap-3 border-t border-border pt-5">
-                <img src={t.avatar} alt="" className="h-9 w-9 rounded-full" />
-                <div>
-                  <div className="text-sm font-semibold">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.college}</div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+
+
 
 function CTA() {
   return (
