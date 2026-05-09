@@ -87,7 +87,7 @@ function LoginPage() {
                 icon={Mail}
                 label="College email"
                 type="email"
-                placeholder="you@college.edu"
+                placeholder="name@university.edu"
                 autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -224,7 +224,9 @@ export function AuthAside() {
               />
             ))}
           </div>
-          <span className="text-xs opacity-80">Joined by 25,000+ verified students</span>
+          <span className="text-xs opacity-80">
+            Joined by 4,200+ verified students across pilot campuses
+          </span>
         </div>
       </div>
       <div className="relative text-xs opacity-60">© SmartCampus · Built for students</div>

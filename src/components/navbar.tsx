@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Search, ShoppingBag, Heart, Trash2, Menu, X, ChevronDown, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,24 +7,46 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/lib/wishlist";
 import { CAMPUSES, type CampusName, useCampus } from "@/lib/campus";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ProductCard } from "@/components/product-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { useAuth } from "@/lib/auth";
+import { buildFallbackUserProfile, useCurrentUserProfile } from "@/lib/user-profile";
 
 const links = [
   { to: "/marketplace", label: "Marketplace" },
+  { to: "/people", label: "People" },
   { to: "/dashboard", label: "Dashboard" },
   { to: "/chat", label: "Messages" },
 ];
 
 export function Navbar() {
+  const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const wishlist = useWishlist();
   const { campus, setCampus } = useCampus();
   const [campusOpen, setCampusOpen] = useState(false);
+  const { user, loading, signOut } = useAuth();
+  const profileQuery = useCurrentUserProfile();
+  const profile = profileQuery.data ?? (user ? buildFallbackUserProfile(user) : null);
+  const isSignedIn = Boolean(user && !loading);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -32,6 +54,19 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/" });
+  };
+
+  const displayName = profile?.displayName ?? user?.displayName ?? "Student";
+  const avatarLabel = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <header
@@ -64,7 +99,7 @@ export function Navbar() {
                   "relative rounded-full px-4 py-2 text-sm transition-all duration-200",
                   isActive
                     ? "text-[#064e3b] dark:text-[#34d399] font-bold bg-[#10b981]/15 dark:bg-[#059669]/20"
-                    : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                    : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
                 )}
               >
                 {l.label}
@@ -169,7 +204,8 @@ export function Navbar() {
                   <>
                     <div className="mb-3 flex items-center justify-between">
                       <div className="text-xs text-muted-foreground">
-                        <span className="font-semibold text-foreground">{wishlist.count}</span> saved
+                        <span className="font-semibold text-foreground">{wishlist.count}</span>{" "}
+                        saved
                       </div>
                       <Button
                         variant="ghost"
@@ -191,15 +227,57 @@ export function Navbar() {
             </SheetContent>
           </Sheet>
           <ThemeToggle />
-          <Link to="/login" className="hidden sm:inline-flex">
-            <Button variant="ghost" size="sm">Sign in</Button>
-          </Link>
-          <Link to="/signup" className="hidden sm:inline-flex">
-            <Button size="sm" className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90">
-              Get started
-            </Button>
-          </Link>
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+          {!isSignedIn ? (
+            <>
+              <Link to="/login" className="hidden sm:inline-flex">
+                <Button variant="ghost" size="sm">
+                  Sign in
+                </Button>
+              </Link>
+              <Link to="/signup" className="hidden sm:inline-flex">
+                <Button
+                  size="sm"
+                  className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
+                >
+                  Get started
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/dashboard" className="hidden sm:inline-flex">
+                <Button variant="ghost" size="sm" className="gap-2 rounded-full">
+                  {profile?.photoUrl ? (
+                    <img
+                      src={profile.photoUrl}
+                      alt=""
+                      className="h-5 w-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-secondary text-[10px] font-semibold text-foreground">
+                      {avatarLabel}
+                    </span>
+                  )}
+                  <span className="max-w-28 truncate">{displayName}</span>
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="hidden rounded-full sm:inline-flex"
+              >
+                Sign out
+              </Button>
+            </>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setOpen(!open)}
+            aria-label="Menu"
+          >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
@@ -218,20 +296,45 @@ export function Navbar() {
               {links.map((l) => {
                 const isActive = path.startsWith(l.to);
                 return (
-                  <Link key={l.to} to={l.to} onClick={() => setOpen(false)}
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setOpen(false)}
                     className={cn(
                       "rounded-lg px-3 py-2 text-sm transition-all duration-200",
                       isActive
                         ? "text-[#064e3b] dark:text-[#34d399] font-bold bg-[#10b981]/15 dark:bg-[#059669]/20"
-                        : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                    )}>
+                        : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                    )}
+                  >
                     {l.label}
                   </Link>
                 );
               })}
               <div className="mt-2 flex gap-2">
-                <Link to="/login" className="flex-1"><Button variant="outline" className="w-full">Sign in</Button></Link>
-                <Link to="/signup" className="flex-1"><Button className="w-full bg-brand-gradient">Get started</Button></Link>
+                {isSignedIn ? (
+                  <>
+                    <Link to="/dashboard" className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button className="flex-1 w-full bg-brand-gradient" onClick={handleSignOut}>
+                      Sign out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        Sign in
+                      </Button>
+                    </Link>
+                    <Link to="/signup" className="flex-1">
+                      <Button className="w-full bg-brand-gradient">Get started</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

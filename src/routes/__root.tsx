@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -12,8 +13,11 @@ import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { WishlistProvider } from "@/lib/wishlist";
 import { CampusProvider } from "@/lib/campus";
-import { products } from "@/lib/mock-data";
+import { AuthProvider } from "@/lib/auth";
+import { CatalogProvider, useCatalog } from "@/lib/catalog";
+import { ItemRequestsProvider } from "@/lib/item-requests-catalog";
 import { BackToTop } from "@/components/back-to-top";
+import { PublicProfileSync } from "@/components/public-profile-sync";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -78,11 +82,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SmartCampus — The Trusted Marketplace for Students" },
-      { name: "description", content: "Buy, sell, rent and exchange books, gadgets, notes and essentials with verified students across your campus." },
+      { title: "SmartCampus - The Trusted Marketplace for Students" },
+      {
+        name: "description",
+        content:
+          "Buy, sell, rent and exchange books, gadgets, notes and essentials with verified students across your campus.",
+      },
       { name: "author", content: "SmartCampus" },
-      { property: "og:title", content: "SmartCampus — The Trusted Marketplace for Students" },
-      { property: "og:description", content: "Buy, sell, rent and exchange resources with verified students on your campus." },
+      { property: "og:title", content: "SmartCampus - The Trusted Marketplace for Students" },
+      {
+        property: "og:description",
+        content: "Buy, sell, rent and exchange resources with verified students on your campus.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
@@ -114,20 +125,32 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function WishlistBridge({ children }: { children: ReactNode }) {
+  const { products } = useCatalog();
+  return <WishlistProvider products={products}>{children}</WishlistProvider>;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <CampusProvider>
-          <WishlistProvider products={products}>
-            <Outlet />
-            <BackToTop />
-            <Toaster />
-          </WishlistProvider>
-        </CampusProvider>
-      </ThemeProvider>
+      <CatalogProvider>
+        <ItemRequestsProvider>
+          <ThemeProvider>
+            <CampusProvider>
+              <AuthProvider>
+                <PublicProfileSync />
+                <WishlistBridge>
+                  <Outlet />
+                  <BackToTop />
+                  <Toaster />
+                </WishlistBridge>
+              </AuthProvider>
+            </CampusProvider>
+          </ThemeProvider>
+        </ItemRequestsProvider>
+      </CatalogProvider>
     </QueryClientProvider>
   );
 }

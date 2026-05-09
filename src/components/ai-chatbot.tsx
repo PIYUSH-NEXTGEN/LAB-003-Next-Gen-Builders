@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const SUGGESTED_PROMPTS = [
   "Find books for CSE",
@@ -18,10 +19,12 @@ interface Message {
 }
 
 export function AIChatbot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorText, setErrorText] = useState("");
 
   const addMessage = (text: string, sender: "user" | "assistant") => {
     const newMessage: Message = {
@@ -33,41 +36,64 @@ export function AIChatbot() {
     setMessages((prev) => [...prev, newMessage]);
   };
 
-  const handleSendMessage = () => {
-    if (!input.trim()) return;
+  const callAssistant = async (prompt: string) => {
+    const trimmed = prompt.trim();
+    if (!trimmed) return;
 
-    addMessage(input, "user");
+    setErrorText("");
+    addMessage(trimmed, "user");
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      const responses = [
-        "I'd love to help! Browse our CSE section to find textbooks and course materials.",
-        "Great choice! Check out our gadgets collection for budget-friendly items under ₹5,000.",
-        "Trending items this week include laptops, stationery, and gaming accessories.",
-        "Our hostel essentials collection includes bedding, storage, and room decor.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, "assistant");
+    try {
+      const token = user ? await user.getIdToken() : "";
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Campus Assistant for a student marketplace. Be concise, practical, and guide students safely.",
+            },
+            ...messages.slice(-6).map((message) => ({
+              role: message.sender === "user" ? "user" : "assistant",
+              content: message.text,
+            })),
+            { role: "user", content: trimmed },
+          ],
+        }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        content?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.ok || !payload.content) {
+        throw new Error(payload.error || "AI service is currently unavailable.");
+      }
+
+      addMessage(payload.content, "assistant");
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to reach AI service.");
+      addMessage("I could not answer right now. Please try again in a moment.", "assistant");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleSendMessage = () => {
+    void callAssistant(input);
   };
 
   const handleSuggestedPrompt = (prompt: string) => {
-    addMessage(prompt, "user");
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const responses = [
-        "I'd recommend checking our filtered listings for that category!",
-        "Let me help you find exactly what you're looking for.",
-        "Great! I found several options that match your interest.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      addMessage(randomResponse, "assistant");
-      setIsLoading(false);
-    }, 800);
+    void callAssistant(prompt);
   };
 
   return (
@@ -79,7 +105,7 @@ export function AIChatbot() {
           "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-elegant",
           "flex items-center justify-center gap-2 transition-all duration-300 z-40",
           "bg-brand-gradient text-primary-foreground hover:shadow-lg hover:scale-105",
-          "border border-primary/20 backdrop-blur-sm"
+          "border border-primary/20 backdrop-blur-sm",
         )}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -104,7 +130,7 @@ export function AIChatbot() {
               "max-h-[600px] flex flex-col",
               "md:bottom-28 md:right-8",
               "sm:bottom-24 sm:right-6 sm:w-80",
-              "max-sm:bottom-20 max-sm:right-4 max-sm:w-[calc(100%-2rem)]"
+              "max-sm:bottom-20 max-sm:right-4 max-sm:w-[calc(100%-2rem)]",
             )}
           >
             {/* Header */}
@@ -145,7 +171,7 @@ export function AIChatbot() {
                       animate={{ opacity: 1, y: 0 }}
                       className={cn(
                         "flex gap-2",
-                        msg.sender === "user" ? "justify-end" : "justify-start"
+                        msg.sender === "user" ? "justify-end" : "justify-start",
                       )}
                     >
                       <div
@@ -153,7 +179,7 @@ export function AIChatbot() {
                           "max-w-xs px-3 py-2 rounded-2xl text-sm",
                           msg.sender === "user"
                             ? "bg-brand-gradient text-primary-foreground rounded-br-none"
-                            : "bg-secondary/60 text-foreground rounded-bl-none"
+                            : "bg-secondary/60 text-foreground rounded-bl-none",
                         )}
                       >
                         {msg.text}
@@ -207,7 +233,7 @@ export function AIChatbot() {
                       className={cn(
                         "text-xs px-3 py-2 rounded-lg text-left transition-all",
                         "bg-secondary/50 hover:bg-secondary text-foreground",
-                        "border border-border/40 hover:border-border/80"
+                        "border border-border/40 hover:border-border/80",
                       )}
                     >
                       {prompt}
@@ -219,6 +245,7 @@ export function AIChatbot() {
 
             {/* Input */}
             <div className="border-t border-border/40 p-3 space-y-2">
+              {errorText ? <p className="text-[11px] text-destructive">{errorText}</p> : null}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -229,7 +256,7 @@ export function AIChatbot() {
                   className={cn(
                     "flex-1 bg-secondary/50 text-sm rounded-lg px-3 py-2 outline-none",
                     "placeholder:text-muted-foreground/60 transition-colors",
-                    "focus:bg-secondary border border-border/40 focus:border-border/80"
+                    "focus:bg-secondary border border-border/40 focus:border-border/80",
                   )}
                 />
                 <motion.button
@@ -240,7 +267,7 @@ export function AIChatbot() {
                   className={cn(
                     "h-9 w-9 rounded-lg flex items-center justify-center transition-all",
                     "bg-brand-gradient text-primary-foreground",
-                    "hover:shadow-soft disabled:opacity-60"
+                    "hover:shadow-soft disabled:opacity-60",
                   )}
                 >
                   {isLoading ? (

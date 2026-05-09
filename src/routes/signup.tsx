@@ -101,7 +101,7 @@ function SignupPage() {
                 <Field
                   icon={User}
                   label="Full name"
-                  placeholder="Aarav Mehta"
+                  placeholder="Alex Morgan"
                   autoComplete="name"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -111,7 +111,7 @@ function SignupPage() {
                   icon={Mail}
                   label="College email"
                   type="email"
-                  placeholder="you@college.edu"
+                  placeholder="name@university.edu"
                   autoComplete="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}

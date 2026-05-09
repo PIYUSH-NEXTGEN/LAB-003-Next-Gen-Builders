@@ -23,8 +23,12 @@ const STORAGE_KEY = "smartcampus:campus:v1";
 
 export function CampusProvider({ children }: { children: React.ReactNode }) {
   const [campus, setCampusState] = React.useState<CampusName | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw && (CAMPUSES as readonly string[]).includes(raw)) return raw as CampusName;
     } catch {
       // ignore
@@ -35,7 +39,7 @@ export function CampusProvider({ children }: { children: React.ReactNode }) {
   const setCampus = React.useCallback((c: CampusName) => {
     setCampusState(c);
     try {
-      localStorage.setItem(STORAGE_KEY, c);
+      window.localStorage.setItem(STORAGE_KEY, c);
     } catch {
       // ignore
     }
@@ -50,4 +54,3 @@ export function useCampus() {
   if (!ctx) throw new Error("useCampus must be used within CampusProvider");
   return ctx;
 }
-
