@@ -2,14 +2,23 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   BadgeCheck, Heart, MessageCircle, Share2, MapPin, Calendar, Shield,
-  TrendingUp, Sparkles, ArrowLeft,
+  TrendingUp, Sparkles, ArrowLeft, Star, RotateCcw,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { products } from "@/lib/mock-data";
+import { useWishlist } from "@/lib/wishlist";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -31,7 +40,18 @@ function ProductDetails() {
   const product = products.find((p) => p.id === id);
   if (!product) throw notFound();
   const [active, setActive] = useState(0);
-  const [liked, setLiked] = useState(false);
+  const wishlist = useWishlist();
+  const liked = wishlist.has(product.id);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [returnStatus, setReturnStatus] = useState<"Active Rental" | "Return Requested" | "Returned Successfully">("Active Rental");
+  const [returnDate, setReturnDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().slice(0, 10);
+  });
   const gallery = product.images?.length ? product.images : [product.image, product.image, product.image, product.image];
   const similar = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
@@ -41,6 +61,17 @@ function ProductDetails() {
     { m: "Jun", p: aiPrice + 150 }, { m: "Jul", p: aiPrice + 80 },
     { m: "Aug", p: aiPrice + 30 },  { m: "Sep", p: aiPrice },
   ];
+
+  const [reviews, setReviews] = useState(() => [
+    { id: "r1", name: "Verified Buyer", verified: true, rating: 5, text: "Smooth transaction and genuine pricing.", time: "2 days ago" },
+    { id: "r2", name: "Ankita", verified: true, rating: 4, text: "Quick replies and item matched the description.", time: "1 week ago" },
+    { id: "r3", name: "Rahul", verified: false, rating: 5, text: "On-time meet-up. Great experience.", time: "3 weeks ago" },
+  ]);
+
+  const avgRating = useMemo(() => {
+    const sum = reviews.reduce((a, r) => a + r.rating, 0);
+    return reviews.length ? sum / reviews.length : product.seller.rating;
+  }, [reviews, product.seller.rating]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -82,8 +113,12 @@ function ProductDetails() {
                 <span className="rounded-full bg-secondary px-2 py-0.5">{product.category}</span>
                 <span className="rounded-full bg-secondary px-2 py-0.5">{product.condition}</span>
                 <span className="rounded-full bg-secondary px-2 py-0.5">Posted {product.postedAgo}</span>
+                {product.usedFor ? <span className="rounded-full bg-secondary px-2 py-0.5">Used for {product.usedFor}</span> : null}
+                {product.availability ? (
+                  <span className="rounded-full bg-secondary px-2 py-0.5">{product.availability}</span>
+                ) : null}
               </div>
-              <h1 className="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              <h1 className="mt-3 font-display text-3xl font-semibold italic leading-tight tracking-tight sm:text-4xl">
                 {product.title}
               </h1>
 
@@ -97,6 +132,45 @@ function ProductDetails() {
               </div>
 
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+
+              {/* Metadata */}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  { k: "Pickup", v: product.pickupLocation ?? "On campus" },
+                  { k: "Department", v: product.department ?? "—" },
+                  { k: "Price", v: typeof product.negotiable === "boolean" ? (product.negotiable ? "Negotiable" : "Fixed") : "—" },
+                  { k: "Age", v: product.itemAge ?? "—" },
+                ].map((x) => (
+                  <div key={x.k} className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+                    <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{x.k}</div>
+                    <div className="mt-1 text-sm font-semibold">{x.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {product.tags?.length ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {product.tags.slice(0, 8).map((t) => (
+                    <span key={t} className="rounded-full border border-border bg-secondary/50 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              {product.specs?.length ? (
+                <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+                  <div className="text-sm font-semibold">Specifications</div>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {product.specs.slice(0, 8).map((s) => (
+                      <li key={s} className="flex items-start gap-2">
+                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
 
               {/* AI Price card */}
               <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card to-secondary/40 p-5">
@@ -159,8 +233,25 @@ function ProductDetails() {
                     Rent · ₹{product.rentPerDay}/day
                   </Button>
                 )}
-                <Button size="lg" variant="outline" className="rounded-full" onClick={() => setLiked(!liked)} aria-label="Wishlist">
-                  <Heart className={liked ? "fill-destructive text-destructive" : ""} />
+                {product.forRent ? (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setReturnOpen(true)}
+                    aria-label="Return item"
+                  >
+                    <RotateCcw />
+                  </Button>
+                ) : null}
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => wishlist.toggle(product)}
+                  aria-label="Wishlist"
+                >
+                  <Heart className={liked ? "fill-foreground text-foreground" : ""} />
                 </Button>
                 <Button size="lg" variant="outline" className="rounded-full" aria-label="Share">
                   <Share2 />
@@ -174,7 +265,7 @@ function ProductDetails() {
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="font-semibold">{product.seller.name}</span>
-                      {product.seller.verified && <BadgeCheck className="h-4 w-4 text-primary" />}
+                    {product.seller.verified && <BadgeCheck className="h-4 w-4 text-foreground" />}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <MapPin className="h-3 w-3" /> {product.seller.college} · ★ {product.seller.rating}
@@ -188,13 +279,60 @@ function ProductDetails() {
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
                   <div className="flex items-center gap-2 rounded-xl bg-secondary/60 p-3">
-                    <Shield className="h-4 w-4 text-primary" />
+                    <Shield className="h-4 w-4 text-foreground" />
                     <span>Verified college email</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-xl bg-secondary/60 p-3">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Calendar className="h-4 w-4 text-foreground" />
                     <span>Member since 2024</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-sm font-semibold italic">Seller reviews</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-0.5 text-foreground/80">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(avgRating) ? "fill-current" : ""}`} />
+                        ))}
+                      </div>
+                      <span className="font-semibold text-foreground">{avgRating.toFixed(1)}</span>
+                      <span>· {reviews.length} reviews</span>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" className="rounded-full" onClick={() => setReviewOpen(true)}>
+                    Write review
+                  </Button>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {reviews.slice(0, 3).map((r) => (
+                    <div key={r.id} className="rounded-2xl border border-border bg-secondary/20 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-semibold">{r.name}</div>
+                            {r.verified ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
+                                <BadgeCheck className="h-3.5 w-3.5" /> Verified buyer
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 flex items-center gap-0.5 text-foreground/80">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-current" : ""}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">{r.time}</div>
+                      </div>
+                      <p className="mt-3 text-sm text-muted-foreground">{r.text}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -207,7 +345,9 @@ function ProductDetails() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {["Central Library", "Cafeteria Block C", "Main Gate"].map((p) => (
                     <button key={p} className="rounded-full border border-border bg-secondary/60 px-3 py-1 text-xs hover:bg-secondary">
-                      📍 {p}
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" /> {p}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -215,9 +355,117 @@ function ProductDetails() {
             </div>
           </div>
 
+          <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Write a review</DialogTitle>
+                <DialogDescription>Share quick feedback for the seller. This is a frontend demo flow.</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <div className="text-xs font-semibold text-muted-foreground">Rating</div>
+                  <div className="mt-2 flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setReviewRating(n)}
+                        className="rounded-lg p-1.5 transition hover:bg-secondary"
+                        aria-label={`Rate ${n} stars`}
+                      >
+                        <Star className={`h-5 w-5 ${n <= reviewRating ? "fill-current text-foreground" : "text-muted-foreground"}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <label className="space-y-1">
+                  <div className="text-xs font-semibold text-muted-foreground">Review</div>
+                  <textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="e.g. Smooth transaction and genuine pricing."
+                    className="min-h-28 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </label>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" className="rounded-full" onClick={() => setReviewOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
+                  onClick={() => {
+                    if (!reviewText.trim()) return;
+                    setReviews((rs) => [
+                      { id: crypto.randomUUID(), name: "You", verified: true, rating: reviewRating, text: reviewText.trim(), time: "Just now" },
+                      ...rs,
+                    ]);
+                    setReviewText("");
+                    setReviewRating(5);
+                    setReviewOpen(false);
+                  }}
+                >
+                  Submit review
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Return rental</DialogTitle>
+                <DialogDescription>Request a return for this rented listing (frontend demo).</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
+                  <div className="text-sm font-semibold">Status</div>
+                  <span
+                    className={
+                      returnStatus === "Returned Successfully"
+                        ? "rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success"
+                        : returnStatus === "Return Requested"
+                          ? "rounded-full bg-warning/15 px-2.5 py-1 text-[11px] font-semibold text-warning"
+                          : "rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary"
+                    }
+                  >
+                    {returnStatus}
+                  </span>
+                </div>
+
+                <label className="space-y-1">
+                  <div className="text-xs font-semibold text-muted-foreground">Preferred return date</div>
+                  <input
+                    type="date"
+                    value={returnDate}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                    disabled={returnStatus !== "Active Rental"}
+                  />
+                </label>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" className="rounded-full" onClick={() => setReturnOpen(false)}>
+                  Close
+                </Button>
+                <Button
+                  className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
+                  disabled={!product.forRent || returnStatus !== "Active Rental"}
+                  onClick={() => setReturnStatus("Return Requested")}
+                >
+                  Confirm return request
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           {/* Similar */}
           <section className="mt-20">
-            <h2 className="font-display text-2xl font-semibold tracking-tight">Similar listings</h2>
+            <h2 className="font-display text-2xl font-semibold italic tracking-tight">Similar listings</h2>
             <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
               {similar.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
             </div>

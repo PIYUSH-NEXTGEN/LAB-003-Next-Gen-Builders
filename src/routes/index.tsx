@@ -7,6 +7,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
+import { CategoryIcon } from "@/components/category-icon";
 import { Button } from "@/components/ui/button";
 import { products, categories, testimonials } from "@/lib/mock-data";
 
@@ -19,8 +20,11 @@ function Landing() {
       <main>
         <Hero />
         <Stats />
+        <MarketplacePulse />
         <Categories />
         <Featured />
+        <RecentlyListed />
+        <FeaturedDeals />
         <HowItWorks />
         <Features />
         <Testimonials />
@@ -34,6 +38,11 @@ function Landing() {
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-hero-gradient">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-28 top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.18),transparent_65%)] blur-2xl" />
+        <div className="absolute -right-32 top-6 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.12),transparent_65%)] blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-64 w-[520px] -translate-x-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(255,255,255,0.08),transparent_65%)] blur-2xl" />
+      </div>
       <div className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 lg:px-8 lg:pt-28">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -42,10 +51,10 @@ function Hero() {
           className="mx-auto max-w-3xl text-center"
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <Sparkles className="h-3.5 w-3.5 text-foreground" />
             AI-powered campus marketplace · Now in 40+ colleges
           </span>
-          <h1 className="mt-6 font-display text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className="mt-6 font-display text-5xl font-semibold italic leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
             Buy, sell & exchange
             <br />
             <span className="text-brand-gradient">within your campus.</span>
@@ -124,12 +133,47 @@ function Stats() {
   );
 }
 
+function MarketplacePulse() {
+  const items = [
+    { t: "12 new listings", d: "in the last hour", icon: TrendingUp },
+    { t: "Fastest sale", d: "Books in 18 minutes", icon: Zap },
+    { t: "Top campus", d: "IIT Delhi trending", icon: Users },
+  ];
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="grid gap-4 md:grid-cols-3">
+        {items.map((x, i) => (
+          <motion.div
+            key={x.t}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ delay: i * 0.08 }}
+            className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft"
+          >
+            <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.18),transparent_65%)] blur-2xl" />
+            <div className="relative flex items-start gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-secondary text-foreground">
+                <x.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold">{x.t}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{x.d}</div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Categories() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="mb-10 flex items-end justify-between">
         <div>
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Browse categories</h2>
+          <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Browse categories</h2>
           <p className="mt-2 text-muted-foreground">Find exactly what you need on campus.</p>
         </div>
         <Link to="/marketplace" className="hidden text-sm font-medium text-primary hover:underline sm:block">
@@ -150,7 +194,9 @@ function Categories() {
               search={{ category: c.name }}
               className="group flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-5 transition hover:-translate-y-1 hover:border-primary/30 hover:shadow-elegant"
             >
-              <span className="text-3xl">{c.emoji}</span>
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-foreground transition group-hover:bg-secondary/80 group-hover:text-primary">
+                <CategoryIcon category={c.name} className="opacity-95 transition group-hover:opacity-100" />
+              </span>
               <div>
                 <div className="text-sm font-semibold">{c.name}</div>
                 <div className="text-xs text-muted-foreground">{c.count} listings</div>
@@ -169,13 +215,72 @@ function Featured() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Trending on campus</h2>
+            <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Trending on campus</h2>
             <p className="mt-2 text-muted-foreground">Hand-picked listings from top sellers.</p>
           </div>
           <Link to="/marketplace" className="text-sm font-medium text-primary hover:underline">View all →</Link>
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
           {products.slice(0, 8).map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RecentlyListed() {
+  return (
+    <section className="py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Recently listed</h2>
+            <p className="mt-2 text-muted-foreground">Fresh items posted by students across campuses.</p>
+          </div>
+          <Link to="/marketplace" className="hidden text-sm font-medium text-primary hover:underline sm:block">
+            See latest →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+          {products.slice(4, 12).map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeaturedDeals() {
+  const deals = [
+    { t: "Featured campus deals", d: "Best value picks, updated daily", icon: BadgeCheck },
+    { t: "Meet-up friendly", d: "Library & main gate safe spots", icon: ShieldCheck },
+    { t: "Price-smart listings", d: "Discounts compared to original", icon: TrendingUp },
+  ];
+  return (
+    <section className="bg-secondary/30 py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Campus highlights</h2>
+            <p className="mt-2 text-muted-foreground">A little extra confidence before you hit “Message”.</p>
+          </div>
+        </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {deals.map((d, i) => (
+            <motion.div
+              key={d.t}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ delay: i * 0.08 }}
+              className="rounded-2xl border border-border bg-card p-7 shadow-soft"
+            >
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-secondary text-foreground">
+                <d.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold">{d.t}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{d.d}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
@@ -191,7 +296,7 @@ function HowItWorks() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">How it works</h2>
+            <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">How it works</h2>
         <p className="mt-3 text-muted-foreground">Three steps from idea to handshake.</p>
       </div>
       <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -230,7 +335,7 @@ function Features() {
     <section className="bg-secondary/30 py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Built for the way students actually trade</h2>
+          <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Built for the way students actually trade</h2>
           <p className="mt-3 text-muted-foreground">Trust, speed, and intelligence baked into every screen.</p>
         </div>
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -243,7 +348,7 @@ function Features() {
               transition={{ delay: i * 0.05 }}
               className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-elegant"
             >
-              <f.icon className="h-5 w-5 text-primary" />
+              <f.icon className="h-5 w-5 text-foreground" />
               <h3 className="mt-4 font-semibold">{f.t}</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">{f.d}</p>
             </motion.div>
@@ -258,7 +363,7 @@ function Testimonials() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Loved by students</h2>
+        <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Loved by students</h2>
         <p className="mt-3 text-muted-foreground">Real stories from verified campus users.</p>
       </div>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
@@ -271,7 +376,7 @@ function Testimonials() {
             transition={{ delay: i * 0.1 }}
             className="rounded-2xl border border-border bg-card p-7 shadow-soft"
           >
-            <div className="flex gap-0.5 text-primary">
+            <div className="flex gap-0.5 text-foreground/80">
               {[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4 fill-current" />)}
             </div>
             <p className="mt-4 text-sm leading-relaxed">"{t.quote}"</p>
@@ -295,7 +400,7 @@ function CTA() {
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-brand-gradient p-12 text-center text-primary-foreground shadow-elegant sm:p-16">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.18),transparent_60%)]" />
         <div className="relative">
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-5xl">
+          <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-5xl">
             Your campus marketplace is one tap away.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base opacity-90">

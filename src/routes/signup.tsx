@@ -137,7 +137,7 @@ function SignupPage() {
                   }
                 />
                 <div className="rounded-xl border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
-                  <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5 text-primary" />
+                  <ShieldCheck className="mr-1.5 inline h-3.5 w-3.5 text-foreground" />
                   We&apos;ll send a verification email after your account is created.
                 </div>
                 {error ? <p className="text-sm text-destructive">{error}</p> : null}

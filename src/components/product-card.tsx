@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, BadgeCheck, MapPin } from "lucide-react";
+import { Heart, BadgeCheck, MapPin, Clock, Tag } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import type { Product } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { useWishlist } from "@/lib/wishlist";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
-  const [liked, setLiked] = useState(false);
+  const wishlist = useWishlist();
+  const liked = wishlist.has(product.id);
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : null;
@@ -31,11 +32,14 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <button
-            onClick={(e) => { e.preventDefault(); setLiked(!liked); }}
+            onClick={(e) => {
+              e.preventDefault();
+              wishlist.toggle(product);
+            }}
             aria-label="Wishlist"
             className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur transition hover:bg-background"
           >
-            <Heart className={cn("h-4 w-4", liked && "fill-destructive text-destructive")} />
+            <Heart className={cn("h-4 w-4", liked && "fill-foreground text-foreground")} />
           </button>
           {discount && (
             <span className="absolute left-3 top-3 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">
@@ -50,11 +54,35 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         </div>
 
         <div className="p-4">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-            <span className="rounded-full bg-secondary px-2 py-0.5">{product.category}</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
+              <Tag className="h-3 w-3" /> {product.category}
+            </span>
             <span className="rounded-full bg-secondary px-2 py-0.5">{product.condition}</span>
+            {product.usedFor ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
+                <Clock className="h-3 w-3" /> {product.usedFor}
+              </span>
+            ) : null}
+            {product.availability ? (
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5",
+                  product.availability === "Available"
+                    ? "bg-success/15 text-success"
+                    : product.availability === "Reserved"
+                      ? "bg-warning/15 text-warning"
+                      : "bg-destructive/15 text-destructive",
+                )}
+              >
+                {product.availability}
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-snug">{product.title}</h3>
+          {product.shortDescription ? (
+            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{product.shortDescription}</p>
+          ) : null}
 
           <div className="mt-3 flex items-end justify-between">
             <div>
@@ -64,6 +92,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
                   ₹{product.originalPrice.toLocaleString("en-IN")}
                 </div>
               )}
+              {typeof product.negotiable === "boolean" ? (
+                <div className="mt-1 text-[11px] font-medium text-muted-foreground">
+                  {product.negotiable ? "Negotiable" : "Fixed price"}
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -72,11 +105,13 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 text-xs font-medium">
                 <span className="truncate">{product.seller.name}</span>
-                {product.seller.verified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-primary" />}
+                {product.seller.verified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-foreground" />}
               </div>
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <MapPin className="h-3 w-3" />
-                <span className="truncate">{product.seller.college}</span>
+                <span className="truncate">
+                  {product.pickupLocation ? product.pickupLocation : product.seller.college}
+                </span>
               </div>
             </div>
           </div>

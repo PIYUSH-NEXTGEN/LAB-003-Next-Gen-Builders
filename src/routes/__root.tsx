@@ -10,6 +10,10 @@ import {
 
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
+import { WishlistProvider } from "@/lib/wishlist";
+import { CampusProvider } from "@/lib/campus";
+import { products } from "@/lib/mock-data";
+import { BackToTop } from "@/components/back-to-top";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -116,8 +120,13 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Outlet />
-        <Toaster />
+        <CampusProvider>
+          <WishlistProvider products={products}>
+            <Outlet />
+            <BackToTop />
+            <Toaster />
+          </WishlistProvider>
+        </CampusProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

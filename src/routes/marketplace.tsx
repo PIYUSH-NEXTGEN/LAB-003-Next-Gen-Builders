@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
+import { CategoryIcon } from "@/components/category-icon";
 import { Button } from "@/components/ui/button";
 import { products, categories, type Category } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
@@ -50,7 +51,7 @@ function MarketplacePage() {
       <main className="flex-1">
         <section className="border-b border-border bg-hero-gradient">
           <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-            <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Marketplace</h1>
+            <h1 className="font-display text-4xl font-semibold italic tracking-tight sm:text-5xl">Marketplace</h1>
             <p className="mt-2 text-muted-foreground">Discover what your campus is buying, selling and renting today.</p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -103,7 +104,12 @@ function MarketplacePage() {
                         activeCat === c.name ? "bg-secondary font-medium" : "hover:bg-secondary/60",
                       )}
                     >
-                      <span>{c.emoji} {c.name}</span>
+                        <span className="flex items-center gap-2">
+                          <span className="grid h-7 w-7 place-items-center rounded-lg bg-secondary text-foreground transition group-hover:text-primary">
+                          <CategoryIcon category={c.name} size={16} animated={false} />
+                        </span>
+                        {c.name}
+                      </span>
                       <span className="text-xs text-muted-foreground">{c.count}</span>
                     </button>
                   ))}
@@ -200,7 +206,9 @@ function FilterBlock({ title, children }: { title: string; children: React.React
 function EmptyState() {
   return (
     <div className="grid place-items-center rounded-2xl border border-dashed border-border bg-card py-20 text-center">
-      <div className="text-5xl">🔍</div>
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-foreground shadow-soft">
+        <Search className="h-6 w-6" />
+      </div>
       <h3 className="mt-4 text-lg font-semibold">No listings found</h3>
       <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters or search terms.</p>
     </div>

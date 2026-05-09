@@ -2,15 +2,24 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
   TrendingUp, Eye, MessageCircle, Heart, Package, ShoppingBag,
-  Plus, BadgeCheck,
+  Plus, BadgeCheck, RotateCcw, CalendarDays,
 } from "lucide-react";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { products, conversations } from "@/lib/mock-data";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
@@ -22,6 +31,25 @@ const chartData = [
 ];
 
 function DashboardPage() {
+  const rentals = useMemo(() => products.filter((p) => p.forRent).slice(0, 4), []);
+  const [returnOpen, setReturnOpen] = useState(false);
+  const [selectedRentalId, setSelectedRentalId] = useState<string | null>(null);
+  const [returnDate, setReturnDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().slice(0, 10);
+  });
+  const [returnNote, setReturnNote] = useState("");
+  const [rentalStatus, setRentalStatus] = useState<Record<string, "Active Rental" | "Return Requested" | "Returned Successfully">>(() => {
+    const init: Record<string, "Active Rental" | "Return Requested" | "Returned Successfully"> = {};
+    rentals.forEach((r, idx) => {
+      init[r.id] = idx === 0 ? "Active Rental" : idx === 1 ? "Return Requested" : "Active Rental";
+    });
+    return init;
+  });
+
+  const selectedRental = selectedRentalId ? products.find((p) => p.id === selectedRentalId) : null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -29,8 +57,8 @@ function DashboardPage() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Welcome back, Aarav 👋</p>
-              <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Your dashboard</h1>
+              <p className="text-sm text-muted-foreground">Welcome back, Aarav</p>
+              <h1 className="mt-1 font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">Your dashboard</h1>
             </div>
             <Button className="rounded-full bg-brand-gradient text-primary-foreground shadow-elegant hover:opacity-90">
               <Plus className="h-4 w-4" /> New listing
@@ -52,7 +80,7 @@ function DashboardPage() {
                 className="rounded-2xl border border-border bg-card p-5 shadow-soft"
               >
                 <div className="flex items-center justify-between">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-primary">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary text-foreground">
                     <s.i className="h-4 w-4" />
                   </div>
                   <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-semibold text-success">{s.t}</span>
@@ -108,7 +136,7 @@ function DashboardPage() {
                   { i: Eye, t: "12 new views on your listings", time: "2d" },
                 ].map((a, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-secondary text-foreground">
                       <a.i className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex-1 text-sm">
@@ -200,6 +228,154 @@ function DashboardPage() {
                 ))}
               </ul>
             </div>
+          </section>
+
+          {/* Rental history */}
+          <section className="mt-12">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold italic">Rental history</h2>
+              <div className="text-sm text-muted-foreground">Manage returns and track status</div>
+            </div>
+
+            {rentals.length === 0 ? (
+              <div className="grid place-items-center rounded-2xl border border-dashed border-border bg-card py-16 text-center">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-secondary text-foreground shadow-soft">
+                  <RotateCcw className="h-5 w-5" />
+                </div>
+                <div className="mt-4 text-sm font-semibold">No rentals yet</div>
+                <div className="mt-1 text-xs text-muted-foreground">Rent items from the marketplace to see them here.</div>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {rentals.map((p, i) => {
+                  const status = rentalStatus[p.id] ?? "Active Rental";
+                  const chip =
+                    status === "Returned Successfully"
+                      ? "bg-success/15 text-success"
+                      : status === "Return Requested"
+                        ? "bg-warning/15 text-warning"
+                        : "bg-primary/10 text-primary";
+                  return (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                      className="rounded-2xl border border-border bg-card p-5 shadow-soft"
+                    >
+                      <div className="flex items-start gap-4">
+                        <img src={p.image} alt="" className="h-16 w-16 rounded-xl object-cover" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="line-clamp-1 text-sm font-semibold">{p.title}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">
+                                ₹{p.rentPerDay}/day · {p.pickupLocation ?? p.seller.college}
+                              </div>
+                            </div>
+                            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${chip}`}>
+                              {status}
+                            </span>
+                          </div>
+                          <div className="mt-4 flex flex-wrap items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1 text-[11px] text-muted-foreground">
+                              <CalendarDays className="h-3.5 w-3.5 text-foreground" />
+                              Return by {returnDate}
+                            </div>
+                            <Link to="/product/$id" params={{ id: p.id }}>
+                              <Button size="sm" variant="outline" className="rounded-full">
+                                View listing
+                              </Button>
+                            </Link>
+                            <Button
+                              size="sm"
+                              className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
+                              disabled={status !== "Active Rental"}
+                              onClick={() => {
+                                setSelectedRentalId(p.id);
+                                setReturnOpen(true);
+                              }}
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                              Return item
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Return item</DialogTitle>
+                  <DialogDescription>
+                    Request a return pickup/hand-off for your rental. This is a frontend demo flow.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  {selectedRental ? (
+                    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
+                      <img src={selectedRental.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                      <div className="min-w-0">
+                        <div className="line-clamp-1 text-sm font-semibold">{selectedRental.title}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          Pickup: {selectedRental.pickupLocation ?? selectedRental.seller.college}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="space-y-1">
+                      <div className="text-xs font-semibold text-muted-foreground">Preferred return date</div>
+                      <input
+                        type="date"
+                        value={returnDate}
+                        onChange={(e) => setReturnDate(e.target.value)}
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                      />
+                    </label>
+                    <div className="rounded-xl border border-border bg-secondary/40 p-3 text-xs text-muted-foreground">
+                      Status becomes <span className="font-semibold text-foreground">Return Requested</span> after confirmation.
+                    </div>
+                  </div>
+
+                  <label className="space-y-1">
+                    <div className="text-xs font-semibold text-muted-foreground">Note (optional)</div>
+                    <textarea
+                      value={returnNote}
+                      onChange={(e) => setReturnNote(e.target.value)}
+                      placeholder="e.g. Available after 6 PM, meet near Hostel Block B"
+                      className="min-h-24 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                    />
+                  </label>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" className="rounded-full" onClick={() => setReturnOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
+                    onClick={() => {
+                      if (selectedRentalId) {
+                        setRentalStatus((s) => ({ ...s, [selectedRentalId]: "Return Requested" }));
+                      }
+                      setReturnNote("");
+                      setReturnOpen(false);
+                    }}
+                  >
+                    Confirm return request
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </section>
         </div>
       </main>

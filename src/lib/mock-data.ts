@@ -13,6 +13,15 @@ export type Product = {
   images?: string[];
   seller: { name: string; college: string; verified: boolean; rating: number; avatar: string };
   description: string;
+  shortDescription?: string;
+  usedFor?: string;
+  itemAge?: string;
+  negotiable?: boolean;
+  pickupLocation?: string;
+  department?: string;
+  specs?: string[];
+  tags?: string[];
+  availability?: "Available" | "Reserved" | "Sold";
   forRent?: boolean;
   rentPerDay?: number;
   postedAgo: string;
@@ -30,6 +39,15 @@ export const products: Product[] = [
     seller: { name: "Aarav Mehta", college: "IIT Delhi", verified: true, rating: 4.9,
       avatar: "https://i.pravatar.cc/120?img=12" },
     description: "Lightly used, no markings on inside pages. A few highlights in chapter 3.",
+    shortDescription: "Clean pages with minimal highlights. Great for 1st year.",
+    usedFor: "8 months",
+    itemAge: "Bought last year",
+    negotiable: true,
+    pickupLocation: "Pickup near Central Library",
+    department: "Mechanical Engineering",
+    specs: ["Edition: 44th", "Binding: Paperback", "Language: English"],
+    tags: ["Semester 1", "Maths", "Core"],
+    availability: "Available",
     postedAgo: "2 days ago",
   },
   {
@@ -40,6 +58,15 @@ export const products: Product[] = [
     seller: { name: "Riya Sharma", college: "BITS Pilani", verified: true, rating: 4.8,
       avatar: "https://i.pravatar.cc/120?img=47" },
     description: "Bought 14 months ago. Battery cycles under 90. Box and charger included.",
+    shortDescription: "Battery health strong. Includes box + original charger.",
+    usedFor: "14 months",
+    itemAge: "2024 model",
+    negotiable: false,
+    pickupLocation: "Pickup near Hostel Block B",
+    department: "CSE",
+    specs: ["Chip: Apple M1", "RAM: 8GB", "Storage: 256GB SSD", "Battery cycles: < 90"],
+    tags: ["Laptop", "Study", "Coding"],
+    availability: "Available",
     postedAgo: "5 hours ago",
   },
   {
@@ -50,6 +77,15 @@ export const products: Product[] = [
     seller: { name: "Karthik R.", college: "NIT Trichy", verified: true, rating: 5.0,
       avatar: "https://i.pravatar.cc/120?img=33" },
     description: "Used for one semester. Works perfectly. Cover included.",
+    shortDescription: "Perfect for engineering exams. Cover included.",
+    usedFor: "1 semester",
+    itemAge: "Bought in 2025",
+    negotiable: true,
+    pickupLocation: "Pickup near Academic Block A",
+    department: "EEE",
+    specs: ["Model: FX-991ES Plus", "Cover: Included", "Keys: Like new"],
+    tags: ["Exam", "Calculator", "Engineering"],
+    availability: "Available",
     postedAgo: "1 day ago",
   },
   {
@@ -61,6 +97,15 @@ export const products: Product[] = [
       avatar: "https://i.pravatar.cc/120?img=14" },
     description: "Recently serviced. New brake pads and tyres.",
     forRent: true, rentPerDay: 80,
+    shortDescription: "Smooth gears, recently serviced. Ideal for campus commute.",
+    usedFor: "2 years",
+    itemAge: "Purchased in 2024",
+    negotiable: true,
+    pickupLocation: "Pickup near Main Gate",
+    department: "Civil Engineering",
+    specs: ["Gears: 21 speed", "Servicing: done", "Tyres: new"],
+    tags: ["Commute", "Cycle", "Hybrid"],
+    availability: "Available",
     postedAgo: "3 days ago",
   },
   {
@@ -71,6 +116,15 @@ export const products: Product[] = [
     seller: { name: "Meera Iyer", college: "IIT Bombay", verified: true, rating: 4.7,
       avatar: "https://i.pravatar.cc/120?img=20" },
     description: "Brand new, sealed. Brightness adjustable.",
+    shortDescription: "Sealed pack. Adjustable brightness + rechargeable battery.",
+    usedFor: "Unused",
+    itemAge: "Bought this week",
+    negotiable: false,
+    pickupLocation: "Pickup near Hostel Block D",
+    department: "ECE",
+    specs: ["Brightness: 3 levels", "Battery: rechargeable", "Color temp: neutral white"],
+    tags: ["Hostel", "Study", "LED"],
+    availability: "Available",
     postedAgo: "6 hours ago",
   },
   {
@@ -81,6 +135,15 @@ export const products: Product[] = [
     seller: { name: "Ananya Singh", college: "DTU", verified: true, rating: 4.9,
       avatar: "https://i.pravatar.cc/120?img=45" },
     description: "Topper notes — covers full syllabus with diagrams.",
+    shortDescription: "Complete syllabus + diagrams + quick revision sheets.",
+    usedFor: "1 semester",
+    itemAge: "Made in 2025",
+    negotiable: true,
+    pickupLocation: "Pickup near CS Department",
+    department: "Computer Science",
+    specs: ["Pages: ~140", "Includes: PYQs", "Format: handwritten"],
+    tags: ["DSA", "Sem 3", "Topper notes"],
+    availability: "Available",
     postedAgo: "1 week ago",
   },
   {
@@ -91,6 +154,15 @@ export const products: Product[] = [
     seller: { name: "Ishaan Verma", college: "IIIT Hyderabad", verified: true, rating: 4.8,
       avatar: "https://i.pravatar.cc/120?img=15" },
     description: "Used for 4 months. Excellent battery life.",
+    shortDescription: "Lightweight, great battery. Perfect for classes and travel.",
+    usedFor: "4 months",
+    itemAge: "Bought in 2025",
+    negotiable: true,
+    pickupLocation: "Pickup near Cafeteria Block C",
+    department: "IT",
+    specs: ["Battery: 50h", "Bluetooth: 5.x", "Mic: built-in"],
+    tags: ["Audio", "Wireless", "Sony"],
+    availability: "Reserved",
     postedAgo: "2 days ago",
   },
   {
@@ -101,6 +173,15 @@ export const products: Product[] = [
     seller: { name: "Tanvi Patel", college: "MIT Manipal", verified: false, rating: 4.3,
       avatar: "https://i.pravatar.cc/120?img=22" },
     description: "Selling because moving out. Sturdy and clean.",
+    shortDescription: "Sturdy foldable table. Fits hostel rooms easily.",
+    usedFor: "1 year",
+    itemAge: "Purchased in 2024",
+    negotiable: true,
+    pickupLocation: "Pickup near Girls Hostel",
+    department: "Architecture",
+    specs: ["Foldable: yes", "Material: engineered wood", "Size: medium"],
+    tags: ["Hostel", "Furniture", "Study"],
+    availability: "Available",
     postedAgo: "4 days ago",
   },
   {
@@ -111,6 +192,15 @@ export const products: Product[] = [
     seller: { name: "Rohan Das", college: "IIT Kharagpur", verified: true, rating: 4.9,
       avatar: "https://i.pravatar.cc/120?img=8" },
     description: "Used for 1 EE lab. Calibrated, pristine condition.",
+    shortDescription: "Calibrated and clean. Great for EE labs.",
+    usedFor: "1 lab",
+    itemAge: "Bought this semester",
+    negotiable: false,
+    pickupLocation: "Pickup near EE Lab",
+    department: "Electrical Engineering",
+    specs: ["Accuracy: lab grade", "Leads: included", "Battery: new"],
+    tags: ["Lab", "Multimeter", "EE"],
+    availability: "Available",
     postedAgo: "12 hours ago",
   },
   {
@@ -122,6 +212,15 @@ export const products: Product[] = [
       avatar: "https://i.pravatar.cc/120?img=49" },
     description: "Perfect for note-taking. Comes with case and Pencil.",
     forRent: true, rentPerDay: 250,
+    shortDescription: "Includes Pencil + case. Great for note-taking.",
+    usedFor: "10 months",
+    itemAge: "Bought in 2024",
+    negotiable: true,
+    pickupLocation: "Pickup near Admin Block",
+    department: "Chemical Engineering",
+    specs: ["Storage: 64GB", "Accessories: Pencil + case", "Condition: minor scratches"],
+    tags: ["iPad", "Notes", "Apple Pencil"],
+    availability: "Available",
     postedAgo: "1 day ago",
   },
   {
@@ -132,6 +231,15 @@ export const products: Product[] = [
     seller: { name: "Aditya Joshi", college: "IIT Madras", verified: true, rating: 4.8,
       avatar: "https://i.pravatar.cc/120?img=11" },
     description: "Both volumes. Clean pages. Great for JEE & first-year physics.",
+    shortDescription: "Both volumes set. Clean pages, strong binding.",
+    usedFor: "1 year",
+    itemAge: "Bought in 2024",
+    negotiable: true,
+    pickupLocation: "Pickup near Physics Department",
+    department: "Engineering Physics",
+    specs: ["Volumes: 2", "Binding: paperback", "Notes: minimal"],
+    tags: ["Physics", "First year", "Core"],
+    availability: "Available",
     postedAgo: "3 days ago",
   },
   {
@@ -142,19 +250,28 @@ export const products: Product[] = [
     seller: { name: "Kabir Shah", college: "BITS Goa", verified: true, rating: 4.6,
       avatar: "https://i.pravatar.cc/120?img=7" },
     description: "Compact, low power. Perfect for hostel rooms.",
+    shortDescription: "Low power, compact. Keeps snacks and drinks chilled.",
+    usedFor: "6 months",
+    itemAge: "Bought in 2025",
+    negotiable: false,
+    pickupLocation: "Pickup near Hostel Block A",
+    department: "MBA",
+    specs: ["Capacity: 50L", "Power: low", "Noise: quiet"],
+    tags: ["Hostel", "Appliance", "Mini fridge"],
+    availability: "Available",
     postedAgo: "5 days ago",
   },
 ];
 
-export const categories: { name: Category; emoji: string; count: number }[] = [
-  { name: "Books", emoji: "📚", count: 312 },
-  { name: "Gadgets", emoji: "🎧", count: 184 },
-  { name: "Notes", emoji: "📝", count: 421 },
-  { name: "Electronics", emoji: "💻", count: 96 },
-  { name: "Cycles", emoji: "🚲", count: 58 },
-  { name: "Hostel Essentials", emoji: "🛏️", count: 142 },
-  { name: "Lab Equipment", emoji: "🔬", count: 47 },
-  { name: "Furniture", emoji: "🪑", count: 73 },
+export const categories: { name: Category; count: number }[] = [
+  { name: "Books", count: 312 },
+  { name: "Gadgets", count: 184 },
+  { name: "Notes", count: 421 },
+  { name: "Electronics", count: 96 },
+  { name: "Cycles", count: 58 },
+  { name: "Hostel Essentials", count: 142 },
+  { name: "Lab Equipment", count: 47 },
+  { name: "Furniture", count: 73 },
 ];
 
 export const testimonials = [
