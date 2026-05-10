@@ -33,7 +33,12 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 import { ListingSafetyBanner } from "@/components/listing-safety-banner";
 import { analyzeListingRisk } from "@/lib/product-safety";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { useTransferCoins } from "@/lib/economy";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useQuery } from "@tanstack/react-query";
+import { trustTierColor, type TrustTier } from "@/lib/trust-score";
+import { ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductDetails,
@@ -76,6 +81,81 @@ function ProductDetails() {
   const similar = products
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
+
+  const { mutate: transferCoins, isPending: transferring } = useTransferCoins();
+
+  const { data: sellerTrust } = useQuery({
+    queryKey: ["trust-score", product.sellerId],
+    enabled: Boolean(product.sellerId),
+    queryFn: async () => {
+      const res = await fetch(`/api/trust/${product.sellerId}`);
+      if (!res.ok) return null;
+      return (await res.json()) as { ok: boolean; score: number; tier: string; label: string };
+    },
+    staleTime: 120_000,
+  });
+
+  const handleBuyWithCoins = () => {
+    if (!product.sellerId) {
+      toast.error("Cannot buy: Seller not found.");
+      return;
+    }
+    transferCoins(
+      {
+        receiverId: product.sellerId,
+        amount: product.price,
+        type: "buy",
+        referenceId: product.id,
+        description: `Bought ${product.title}`,
+      },
+      {
+        onSuccess: async () => {
+          toast.success("Purchase successful! Coins transferred.");
+          try {
+            await updateDoc(doc(db, "listings", product.id), {
+              availability: "Sold",
+            });
+          } catch (e) {
+            console.error("Failed to update availability:", e);
+          }
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      }
+    );
+  };
+
+  const handleRentWithCoins = () => {
+    if (!product.sellerId || !product.rentPerDay) {
+      toast.error("Cannot rent: Details not found.");
+      return;
+    }
+    transferCoins(
+      {
+        receiverId: product.sellerId,
+        amount: product.rentPerDay,
+        type: "rent",
+        referenceId: product.id,
+        description: `Rented ${product.title}`,
+      },
+      {
+        onSuccess: async () => {
+          toast.success("Rent successful! Coins transferred.");
+          try {
+            await updateDoc(doc(db, "listings", product.id), {
+              availability: "Rented",
+            });
+          } catch (e) {
+            console.error("Failed to update availability:", e);
+          }
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      }
+    );
+  };
 
   const aiPrice = Math.round(product.price * 0.96);
   const trend = [
@@ -344,11 +424,19 @@ function ProductDetails() {
                 <Button
                   size="lg"
                   className="flex-1 rounded-full bg-brand-gradient text-primary-foreground shadow-elegant hover:opacity-90"
+                  onClick={handleBuyWithCoins}
+                  disabled={transferring || product.availability === "Sold" || product.availability === "Rented"}
                 >
-                  {t("buy")} · ₹{product.price.toLocaleString("en-IN")}
+                  {transferring ? "Processing..." : `Buy now · ₹${product.price.toLocaleString("en-IN")}`}
                 </Button>
                 {product.forRent && (
-                  <Button size="lg" variant="outline" className="rounded-full">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="rounded-full"
+                    onClick={handleRentWithCoins}
+                    disabled={transferring || product.availability === "Sold" || product.availability === "Rented"}
+                  >
                     Rent · ₹{product.rentPerDay}/day
                   </Button>
                 )}
@@ -403,6 +491,15 @@ function ProductDetails() {
                       {product.seller.rating}
                     </div>
                   </div>
+                  {/* Trust Badge */}
+                  {sellerTrust && (
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${trustTierColor(sellerTrust.tier as TrustTier).bg} ${trustTierColor(sellerTrust.tier as TrustTier).text} ${trustTierColor(sellerTrust.tier as TrustTier).ring}`}
+                    >
+                      <ShieldCheck className="h-3 w-3" />
+                      {sellerTrust.label} · {sellerTrust.score}
+                    </span>
+                  )}
                   {product.sellerId ? (
                     <Link
                       to="/chat"

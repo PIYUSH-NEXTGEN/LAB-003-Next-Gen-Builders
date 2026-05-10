@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type User } from "firebase/auth";
 
 import { useAuth } from "@/lib/auth";
@@ -73,5 +73,47 @@ export function useCurrentUserProfile() {
       }
     },
     staleTime: 60_000,
+  });
+}
+
+export type ProfileUpdatePayload = {
+  displayName?: string;
+  bio?: string;
+  collegeName?: string;
+  major?: string;
+};
+
+export async function updateCurrentUserProfile(
+  user: User,
+  updates: ProfileUpdatePayload,
+): Promise<void> {
+  const token = await user.getIdToken();
+  const response = await fetch("/api/users/me", {
+    method: "PATCH",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(message || `Failed to update profile (${response.status}).`);
+  }
+}
+
+export function useUpdateUserProfile() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updates: ProfileUpdatePayload) => {
+      if (!user) throw new Error("Not signed in");
+      await updateCurrentUserProfile(user, updates);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["current-user-profile"] });
+    },
   });
 }

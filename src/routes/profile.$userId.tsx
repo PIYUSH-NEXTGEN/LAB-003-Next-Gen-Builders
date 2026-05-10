@@ -11,6 +11,9 @@ import {
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { trustTierColor, type TrustTier } from "@/lib/trust-score";
+import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/profile/$userId")({
   component: PublicProfilePage,
@@ -41,6 +44,17 @@ function PublicProfilePage() {
       cancelled = true;
     };
   }, [userId]);
+
+  const { data: trustData } = useQuery({
+    queryKey: ["trust-score", userId],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      const res = await fetch(`/api/trust/${userId}`);
+      if (!res.ok) return null;
+      return (await res.json()) as { ok: boolean; score: number; tier: string; label: string };
+    },
+    staleTime: 120_000,
+  });
 
   const chatDisabledReason =
     !user ? "sign-in"
@@ -112,6 +126,32 @@ function PublicProfilePage() {
                       <span>Campus not shared yet — encourage them to pick one from the navbar.</span>
                     )}
                   </div>
+
+                  {/* Trust Score Card */}
+                  {trustData && trustData.ok && (
+                    <div className="mt-4 w-full max-w-xs mx-auto">
+                      <div className={`rounded-2xl border p-4 ${trustTierColor(trustData.tier as TrustTier).bg}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Shield className={`h-5 w-5 ${trustTierColor(trustData.tier as TrustTier).text}`} />
+                            <span className="text-sm font-semibold">Trust Score</span>
+                          </div>
+                          <span className={`text-lg font-bold ${trustTierColor(trustData.tier as TrustTier).text}`}>
+                            {trustData.score}/100
+                          </span>
+                        </div>
+                        <div className="mt-2 h-2 w-full rounded-full bg-background/50">
+                          <div
+                            className={`h-2 rounded-full transition-all ${trustData.tier === 'excellent' ? 'bg-emerald-500' : trustData.tier === 'good' ? 'bg-blue-500' : trustData.tier === 'fair' ? 'bg-amber-500' : 'bg-zinc-400'}`}
+                            style={{ width: `${trustData.score}%` }}
+                          />
+                        </div>
+                        <div className={`mt-1.5 text-xs font-medium ${trustTierColor(trustData.tier as TrustTier).text}`}>
+                          {trustData.label} Trust
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-8 flex w-full max-w-sm flex-col gap-2">
                     {chatSearch ? (

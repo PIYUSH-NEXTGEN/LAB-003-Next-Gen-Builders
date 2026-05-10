@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/command";
 import { useAuth } from "@/lib/auth";
 import { buildFallbackUserProfile, useCurrentUserProfile } from "@/lib/user-profile";
+import { useWalletBalance } from "@/lib/economy";
+import { Wallet } from "lucide-react";
 
 const links = [
   { to: "/marketplace", label: "Marketplace" },
@@ -50,6 +52,7 @@ export function Navbar() {
   const profileQuery = useCurrentUserProfile();
   const profile = profileQuery.data ?? (user ? buildFallbackUserProfile(user) : null);
   const isSignedIn = Boolean(user && !loading);
+  const { data: balance = 0 } = useWalletBalance();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -169,6 +172,17 @@ export function Navbar() {
               </Command>
             </PopoverContent>
           </Popover>
+
+          {isSignedIn && (
+            <Link to="/wallet">
+              <Button variant="ghost" className="flex items-center gap-2 rounded-full px-4 text-brand-dark hover:bg-brand-light/50">
+                <Wallet className="h-4 w-4" />
+                <span className="font-semibold text-sm">
+                  {balanceIsLoading ? "..." : `₹${balance?.toLocaleString("en-IN") || 0}`}
+                </span>
+              </Button>
+            </Link>
+          )}
 
           <Sheet>
             <SheetTrigger asChild>

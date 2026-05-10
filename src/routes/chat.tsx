@@ -45,6 +45,8 @@ import {
   type ChatMessage,
   type ChatThread,
 } from "@/lib/chat-socket";
+import { checkMessageForSpam } from "@/lib/spam-detection";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -358,6 +360,13 @@ function ChatPage() {
 
     const trimmed = text.trim();
     if (!trimmed && pending.length === 0) return;
+
+    // Spam check
+    const spamResult = checkMessageForSpam(trimmed);
+    if (spamResult.isSpam) {
+      toast.error(spamResult.reason);
+      return;
+    }
 
     if (editingId) {
       socket.emit("chat:message:edit", {

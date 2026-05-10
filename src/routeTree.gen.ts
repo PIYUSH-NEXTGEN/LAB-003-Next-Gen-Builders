@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PeopleRouteImport } from './routes/people'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
@@ -20,6 +21,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/marketplace': typeof MarketplaceRoute
   '/people': typeof PeopleRoute
   '/signup': typeof SignupRoute
+  '/wallet': typeof WalletRoute
   '/product/$id': typeof ProductIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof MarketplaceRoute
   '/people': typeof PeopleRoute
   '/signup': typeof SignupRoute
+  '/wallet': typeof WalletRoute
   '/product/$id': typeof ProductIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/marketplace': typeof MarketplaceRoute
   '/people': typeof PeopleRoute
   '/signup': typeof SignupRoute
+  '/wallet': typeof WalletRoute
   '/product/$id': typeof ProductIdRoute
   '/profile/$userId': typeof ProfileUserIdRoute
 }
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/people'
     | '/signup'
+    | '/wallet'
     | '/product/$id'
     | '/profile/$userId'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/people'
     | '/signup'
+    | '/wallet'
     | '/product/$id'
     | '/profile/$userId'
   id:
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/people'
     | '/signup'
+    | '/wallet'
     | '/product/$id'
     | '/profile/$userId'
   fileRoutesById: FileRoutesById
@@ -156,12 +168,20 @@ export interface RootRouteChildren {
   MarketplaceRoute: typeof MarketplaceRoute
   PeopleRoute: typeof PeopleRoute
   SignupRoute: typeof SignupRoute
+  WalletRoute: typeof WalletRoute
   ProductIdRoute: typeof ProductIdRoute
   ProfileUserIdRoute: typeof ProfileUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceRoute: MarketplaceRoute,
   PeopleRoute: PeopleRoute,
   SignupRoute: SignupRoute,
+  WalletRoute: WalletRoute,
   ProductIdRoute: ProductIdRoute,
   ProfileUserIdRoute: ProfileUserIdRoute,
 }
