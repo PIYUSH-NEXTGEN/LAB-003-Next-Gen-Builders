@@ -1,9 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "nextgen",
-  "compatibility_date": "2024-04-01",
+  "name": "tanstack-start-app",
+  "compatibility_date": "2025-09-24",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": ".output/public"
+  "main": "src/server.ts",
+  "name": "nextgen"
 }
