@@ -272,6 +272,61 @@ async function readUserWithDataApi(userId: string, env: unknown) {
   return payload.document ?? null;
 }
 
+async function updateUserProfileWithMongoDriver(userId: string, updates: Record<string, unknown>, env: unknown) {
+  const mongoUri = getEnvValue(env, "MONGO_URI");
+  const database = getEnvValue(env, "MONGODB_DATABASE");
+  const collection = getEnvValue(env, "MONGODB_USERS_COLLECTION") ?? "users";
+
+  if (!mongoUri || !database) {
+    return false;
+  }
+
+  const client = await getMongoClient(mongoUri);
+  const result = await client
+    .db(database)
+    .collection(collection)
+    .updateOne({ firebaseUid: userId }, { $set: updates });
+
+  return result.modifiedCount > 0 || result.matchedCount > 0;
+}
+
+async function updateUserProfileWithDataApi(userId: string, updates: Record<string, unknown>, env: unknown) {
+  const dataApiUrl = getEnvValue(env, "MONGODB_DATA_API_URL");
+  const dataApiKey = getEnvValue(env, "MONGODB_DATA_API_KEY");
+  const dataSource = getEnvValue(env, "MONGODB_DATA_SOURCE");
+  const database = getEnvValue(env, "MONGODB_DATABASE");
+  const collection = getEnvValue(env, "MONGODB_USERS_COLLECTION") ?? "users";
+
+  if (!dataApiUrl || !dataApiKey || !dataSource || !database) {
+    return false;
+  }
+
+  const response = await fetch(toDataApiActionUrl(dataApiUrl, "updateOne"), {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "api-key": dataApiKey,
+    },
+    body: JSON.stringify({
+      dataSource,
+      database,
+      collection,
+      filter: { firebaseUid: userId },
+      update: { $set: updates },
+    }),
+  });
+
+  return response.ok;
+}
+
+async function updateUserProfileInMongo(userId: string, updates: Record<string, unknown>, env: unknown) {
+  const mongoUri = getEnvValue(env, "MONGO_URI");
+  if (mongoUri) {
+    return updateUserProfileWithMongoDriver(userId, updates, env);
+  }
+  return updateUserProfileWithDataApi(userId, updates, env);
+}
+
 async function readUserProfileFromMongo(userId: string, env: unknown) {
   const mongoUri = getEnvValue(env, "MONGO_URI");
 
@@ -295,7 +350,7 @@ function buildUserProfile(user: AuthUser, storedProfile: StoredUserProfile | nul
     createdAt: profile.createdAt ?? user.createdAt ?? null,
     lastLoginAt: profile.lastLoginAt ?? user.lastLoginAt ?? null,
     source: storedProfile ? "backend" : "firebase",
-    walletBalance: typeof profile.walletBalance === "number" ? profile.walletBalance : 1000,
+    walletBalance: typeof profile.walletBalance === "number" ? profile.walletBalance : 100,
   };
 }
 
@@ -380,6 +435,38 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
   }
 
   if (url.pathname === "/api/users/me") {
+    if (request.method === "PATCH") {
+      try {
+        const user = await lookupFirebaseUserByIdToken(token, env);
+        if (!user?.localId) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
+        const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+        const allowedUpdates: Record<string, unknown> = {};
+        
+        if (typeof body.displayName === "string") allowedUpdates.displayName = body.displayName.trim();
+        if (typeof body.bio === "string") allowedUpdates.bio = body.bio.trim();
+        if (typeof body.collegeName === "string") allowedUpdates.collegeName = body.collegeName.trim();
+        if (typeof body.major === "string") allowedUpdates.major = body.major.trim();
+
+        if (Object.keys(allowedUpdates).length > 0) {
+          await updateUserProfileInMongo(user.localId, allowedUpdates, env);
+        }
+
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      } catch (error) {
+        console.error(error);
+        return new Response(JSON.stringify({ ok: false, error: "Failed to update profile" }), {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        });
+      }
+    }
+
     if (request.method !== "GET") {
       return new Response("Method not allowed", { status: 405 });
     }
@@ -461,7 +548,7 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
       if (!user?.localId) return new Response("Unauthorized", { status: 401 });
 
       let profile = await readUserProfileFromMongo(user.localId, env);
-      const balance = typeof profile?.walletBalance === "number" ? profile.walletBalance : 1000;
+      const balance = typeof profile?.walletBalance === "number" ? profile.walletBalance : 100;
 
       return new Response(JSON.stringify({ ok: true, balance }), {
         status: 200,
@@ -526,7 +613,7 @@ async function handleApiRequest(request: Request, env: unknown): Promise<Respons
 
       // We'll run this manually without a driver transaction for simplicity in the mock.
       const senderProfile = await db.collection("users").findOne({ firebaseUid: user.localId });
-      const senderBalance = typeof senderProfile?.walletBalance === "number" ? senderProfile.walletBalance : 1000;
+      const senderBalance = typeof senderProfile?.walletBalance === "number" ? senderProfile.walletBalance : 100;
 
       if (senderBalance < amount) {
         return new Response(JSON.stringify({ error: "Insufficient balance" }), { status: 400 });

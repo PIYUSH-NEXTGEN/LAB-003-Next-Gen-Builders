@@ -28,7 +28,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { buildFallbackUserProfile, useCurrentUserProfile } from "@/lib/user-profile";
 import { useWalletBalance } from "@/lib/economy";
-import { Coins } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 const links = [
   { to: "/marketplace", label: "Marketplace" },
@@ -172,13 +172,11 @@ export function Navbar() {
 
           {isSignedIn && (
             <Link to="/wallet">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden items-center gap-1.5 rounded-full bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 hover:text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 dark:hover:bg-amber-500/30 sm:flex"
-              >
-                <Coins className="h-4 w-4" />
-                <span className="font-semibold">{balance.toLocaleString()}</span>
+              <Button variant="ghost" className="flex items-center gap-2 rounded-full px-4 text-brand-dark hover:bg-brand-light/50">
+                <Wallet className="h-4 w-4" />
+                <span className="font-semibold text-sm">
+                  {balanceIsLoading ? "..." : `₹${balance?.toLocaleString("en-IN") || 0}`}
+                </span>
               </Button>
             </Link>
           )}

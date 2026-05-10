@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useWalletBalance, useTransactionHistory } from "@/lib/economy";
-import { Coins, ArrowUpRight, ArrowDownLeft, Clock } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownLeft, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 
@@ -18,19 +18,18 @@ function WalletPage() {
       <h1 className="mb-8 text-3xl font-bold tracking-tight text-foreground">My Wallet</h1>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Balance Card */}
         <Card className="col-span-1 border-none bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-xl">
           <CardHeader>
             <CardTitle className="text-amber-100 flex items-center gap-2">
-              <Coins className="h-5 w-5" /> Campus Coins
+              <Wallet className="h-5 w-5" /> Wallet Balance
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-5xl font-black tracking-tighter">
-              {loadingBalance ? "..." : balance.toLocaleString()}
+              {loadingBalance ? "..." : `₹${balance?.toLocaleString("en-IN")}`}
             </div>
             <p className="mt-2 text-sm text-amber-100/80">
-              Use coins to buy and rent items on the marketplace.
+              Use your wallet to buy and rent items on the marketplace.
             </p>
           </CardContent>
         </Card>
@@ -84,8 +83,7 @@ function WalletPage() {
                           isSender ? "text-red-500" : "text-emerald-500"
                         }`}
                       >
-                        {isSender ? "-" : "+"}
-                        {tx.amount.toLocaleString()}
+                        {isSender ? "-" : "+"}₹{tx.amount.toLocaleString("en-IN")}
                       </div>
                     </div>
                   );

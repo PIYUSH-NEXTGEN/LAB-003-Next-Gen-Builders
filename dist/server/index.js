@@ -1,4 +1,4 @@
-import { w } from "./assets/worker-entry-lb6AVIsX.js";
+import { w } from "./assets/worker-entry-DE8uvRpa.js";
 import "node:events";
 import "timers/promises";
 import "timers";

@@ -34,7 +34,8 @@ import { ListingSafetyBanner } from "@/components/listing-safety-banner";
 import { analyzeListingRisk } from "@/lib/product-safety";
 import { toast } from "sonner";
 import { useTransferCoins } from "@/lib/economy";
-import { Coins } from "lucide-react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductDetails,
@@ -93,8 +94,46 @@ function ProductDetails() {
         description: `Bought ${product.title}`,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           toast.success("Purchase successful! Coins transferred.");
+          try {
+            await updateDoc(doc(db, "listings", product.id), {
+              availability: "Sold",
+            });
+          } catch (e) {
+            console.error("Failed to update availability:", e);
+          }
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      }
+    );
+  };
+
+  const handleRentWithCoins = () => {
+    if (!product.sellerId || !product.rentPerDay) {
+      toast.error("Cannot rent: Details not found.");
+      return;
+    }
+    transferCoins(
+      {
+        receiverId: product.sellerId,
+        amount: product.rentPerDay,
+        type: "rent",
+        referenceId: product.id,
+        description: `Rented ${product.title}`,
+      },
+      {
+        onSuccess: async () => {
+          toast.success("Rent successful! Coins transferred.");
+          try {
+            await updateDoc(doc(db, "listings", product.id), {
+              availability: "Rented",
+            });
+          } catch (e) {
+            console.error("Failed to update availability:", e);
+          }
         },
         onError: (err) => {
           toast.error(err.message);
@@ -371,13 +410,18 @@ function ProductDetails() {
                   size="lg"
                   className="flex-1 rounded-full bg-brand-gradient text-primary-foreground shadow-elegant hover:opacity-90"
                   onClick={handleBuyWithCoins}
-                  disabled={transferring}
+                  disabled={transferring || product.availability === "Sold" || product.availability === "Rented"}
                 >
-                  <Coins className="mr-2 h-4 w-4" />
-                  {transferring ? "Processing..." : `Buy with Coins · ${product.price.toLocaleString("en-IN")}`}
+                  {transferring ? "Processing..." : `Buy now · ₹${product.price.toLocaleString("en-IN")}`}
                 </Button>
                 {product.forRent && (
-                  <Button size="lg" variant="outline" className="rounded-full">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="rounded-full"
+                    onClick={handleRentWithCoins}
+                    disabled={transferring || product.availability === "Sold" || product.availability === "Rented"}
+                  >
                     Rent · ₹{product.rentPerDay}/day
                   </Button>
                 )}
