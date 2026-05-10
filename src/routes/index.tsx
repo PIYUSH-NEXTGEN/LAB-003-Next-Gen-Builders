@@ -19,6 +19,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
@@ -55,6 +56,7 @@ function Landing() {
 
 function Hero({ onRequestItem }: { onRequestItem: () => void }) {
   const { products } = useCatalog();
+  const { t } = useTranslation();
 
   return (
     <section className="relative overflow-hidden bg-hero-gradient">
@@ -72,16 +74,15 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-foreground" />
-            AI-powered campus marketplace · Pilot running across 8 campuses
+            {t("hero_badge")}
           </span>
           <h1 className="mt-6 font-display text-5xl font-semibold italic leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Buy, sell & exchange
+            {t("hero_title_1")}
             <br />
-            <span className="text-brand-gradient">within your campus.</span>
+            <span className="text-brand-gradient">{t("hero_title_2")}</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            The trusted marketplace built exclusively for verified students. Books, gadgets, notes,
-            cycles, hostel essentials — all from people you can actually meet.
+            {t("hero_subtitle")}
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/marketplace">
@@ -89,12 +90,12 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
                 size="lg"
                 className="rounded-full bg-brand-gradient px-7 text-primary-foreground shadow-elegant hover:opacity-90"
               >
-                Explore marketplace <ArrowRight className="h-4 w-4" />
+                {t("explore_marketplace")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/signup">
               <Button size="lg" variant="outline" className="rounded-full px-7">
-                Sell something
+                {t("sell_something")}
               </Button>
             </Link>
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -105,7 +106,7 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
                 className="rounded-full border-primary/30 px-7 text-primary hover:bg-primary/5 hover:border-primary/50"
               >
                 <HandHeart className="mr-1.5 h-4 w-4" />
-                Request Item
+                {t("request_item")}
               </Button>
             </motion.div>
           </div>
@@ -113,7 +114,7 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
           <div className="mx-auto mt-10 flex max-w-xl items-center gap-2 rounded-full border border-border bg-card px-4 py-3 shadow-soft">
             <Search className="h-4 w-4 text-muted-foreground" />
             <input
-              placeholder="Search for books, gadgets, calculators…"
+              placeholder={t("search_placeholder")}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <kbd className="hidden rounded-md border border-border bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground sm:block">
@@ -154,11 +155,12 @@ function Hero({ onRequestItem }: { onRequestItem: () => void }) {
 }
 
 function Stats() {
+  const { t } = useTranslation();
   const stats = [
-    { v: "8", l: "Pilot campuses" },
-    { v: "4.2K+", l: "Verified students" },
-    { v: "12.6K", l: "Successful exchanges" },
-    { v: "4.8/5", l: "Average rating" },
+    { v: "8", l: t("stats_pilot") },
+    { v: "4.2K+", l: t("stats_verified") },
+    { v: "12.6K", l: t("stats_exchanges") },
+    { v: "4.8/5", l: t("stats_rating") },
   ];
   return (
     <section className="border-y border-border/60 bg-secondary/40">
@@ -228,20 +230,21 @@ function MarketplacePulse() {
 function Categories() {
   const { products } = useCatalog();
   const categories = categorySummaries(products);
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="mb-10 flex items-end justify-between">
         <div>
           <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">
-            Browse categories
+            {t("browse_categories")}
           </h2>
-          <p className="mt-2 text-muted-foreground">Find exactly what you need on campus.</p>
+          <p className="mt-2 text-muted-foreground">{t("browse_categories_desc")}</p>
         </div>
         <Link
           to="/marketplace"
           className="hidden text-sm font-medium text-primary hover:underline sm:block"
         >
-          View all →
+          {t("view_all")}
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -278,6 +281,7 @@ function Categories() {
 
 function Featured() {
   const { products } = useCatalog();
+  const { t } = useTranslation();
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Warm gradient background */}
@@ -288,12 +292,12 @@ function Featured() {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <h2 className="font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">
-              Trending on campus
+              {t("trending_on_campus")}
             </h2>
-            <p className="mt-2 text-muted-foreground">Hand-picked listings from top sellers.</p>
+            <p className="mt-2 text-muted-foreground">{t("trending_desc")}</p>
           </div>
           <Link to="/marketplace" className="text-sm font-medium text-primary hover:underline">
-            View all →
+            {t("view_all")}
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
@@ -309,6 +313,7 @@ function Featured() {
 function RequestedByStudents() {
   const { requests } = useCampusItemRequests();
   const [provideFor, setProvideFor] = useState<ItemRequest | null>(null);
+  const { t } = useTranslation();
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Subtle gradient background */}
@@ -319,13 +324,13 @@ function RequestedByStudents() {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <span className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              <HandHeart className="h-3 w-3" /> Live requests
+              <HandHeart className="h-3 w-3" /> {t("live_requests")}
             </span>
             <h2 className="mt-2 font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">
-              Requested by students
+              {t("requested_by_students")}
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Students are looking for these items right now. Can you help?
+              {t("requested_desc")}
             </p>
           </div>
         </div>
@@ -736,6 +741,7 @@ function Testimonials() {
 }
 
 function CTA() {
+  const { t } = useTranslation();
   return (
     <section className="relative px-4 py-24 sm:px-6 lg:px-8 overflow-hidden">
       {/* Warm gradient background */}
@@ -746,10 +752,10 @@ function CTA() {
         <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.08),transparent_65%)] blur-3xl" />
         <div className="relative">
           <h2 className="font-display text-3xl font-semibold italic tracking-tight text-foreground sm:text-5xl">
-            Your campus marketplace is one tap away.
+            {t("cta_title")}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
-            Join 4,200+ verified students already exchanging smarter on campus.
+            {t("cta_desc")}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link to="/signup">
@@ -757,7 +763,7 @@ function CTA() {
                 size="lg"
                 className="rounded-full bg-brand-gradient px-8 text-primary-foreground shadow-elegant hover:opacity-90"
               >
-                Get started — free
+                {t("get_started_free")}
               </Button>
             </Link>
             <Link to="/marketplace">
@@ -766,7 +772,7 @@ function CTA() {
                 variant="outline"
                 className="rounded-full border-border px-8 text-foreground hover:bg-secondary"
               >
-                Browse listings
+                {t("browse_listings")}
               </Button>
             </Link>
           </div>

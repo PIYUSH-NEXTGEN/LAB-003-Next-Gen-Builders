@@ -14,10 +14,12 @@ import { AuthAside, Field, SocialBtn } from "./login";
 import { auth, getFirebaseAuthErrorMessage, googleProvider } from "@/lib/firebase";
 import { syncAuthenticatedUserToMongo } from "@/lib/user-sync";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/signup")({ component: SignupPage });
 
 function SignupPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [name, setName] = useState("");
@@ -82,10 +84,10 @@ function SignupPage() {
           >
             <>
               <h1 className="font-display text-3xl font-semibold tracking-tight">
-                Create your account
+                {t("create_account")}
               </h1>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Use your college email to get verified instantly.
+                {t("signup_subtitle")}
               </p>
 
               <div className="mt-7 grid gap-2">
@@ -100,7 +102,7 @@ function SignupPage() {
               <form className="space-y-3" onSubmit={handleCreateAccount}>
                 <Field
                   icon={User}
-                  label="Full name"
+                  label={t("full_name")}
                   placeholder="Alex Morgan"
                   autoComplete="name"
                   value={name}
@@ -109,7 +111,7 @@ function SignupPage() {
                 />
                 <Field
                   icon={Mail}
-                  label="College email"
+                  label={t("college_email")}
                   type="email"
                   placeholder="name@university.edu"
                   autoComplete="email"
@@ -119,7 +121,7 @@ function SignupPage() {
                 />
                 <Field
                   icon={Lock}
-                  label="Password"
+                  label={t("password")}
                   type={show ? "text" : "password"}
                   placeholder="At least 8 characters"
                   autoComplete="new-password"
@@ -147,14 +149,14 @@ function SignupPage() {
                   className="w-full rounded-xl bg-brand-gradient text-primary-foreground shadow-elegant hover:opacity-90"
                   disabled={loading}
                 >
-                  {loading ? "Creating account..." : "Continue"}
+                  {loading ? t("creating_account") : t("continue")}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
+                {t("already_have_account")}{" "}
                 <Link to="/login" className="font-medium text-primary hover:underline">
-                  Sign in
+                  {t("sign_in")}
                 </Link>
               </p>
             </>

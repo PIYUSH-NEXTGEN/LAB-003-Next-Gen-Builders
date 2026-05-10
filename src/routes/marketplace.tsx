@@ -11,6 +11,7 @@ import { type Category } from "@/lib/mock-data";
 import { categorySummaries, useCatalog } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import { CAMPUSES } from "@/lib/campus";
+import { useTranslation } from "react-i18next";
 
 type SearchParams = { category?: string };
 
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/marketplace")({
 });
 
 function MarketplacePage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const { products } = useCatalog();
   const categories = useMemo(() => categorySummaries(products), [products]);
@@ -119,10 +121,10 @@ function MarketplacePage() {
         <section className="border-b border-border bg-hero-gradient">
           <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
             <h1 className="font-display text-4xl font-semibold italic tracking-tight sm:text-5xl">
-              Marketplace
+              {t("marketplace")}
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Discover what your campus is buying, selling and renting today.
+              {t("marketplace_subtitle", "Discover what your campus is buying, selling and renting today.")}
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -131,7 +133,7 @@ function MarketplacePage() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search listings…"
+                  placeholder={t("search_listings", "Search listings…")}
                   className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
               </div>
@@ -142,16 +144,16 @@ function MarketplacePage() {
                   }
                   className="flex flex-1 items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-3 text-sm font-medium shadow-soft transition hover:bg-secondary lg:hidden"
                 >
-                  <SlidersHorizontal className="h-4 w-4" /> Filters
+                  <SlidersHorizontal className="h-4 w-4" /> {t("filters", "Filters")}
                 </button>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as typeof sort)}
                   className="flex-1 rounded-full border border-border bg-card px-4 py-3 text-sm shadow-soft outline-none sm:flex-none"
                 >
-                  <option value="new">Newest</option>
-                  <option value="low">Price: low to high</option>
-                  <option value="high">Price: high to low</option>
+                  <option value="new">{t("newest", "Newest")}</option>
+                  <option value="low">{t("price_low_high", "Price: low to high")}</option>
+                  <option value="high">{t("price_high_low", "Price: high to low")}</option>
                 </select>
               </div>
             </div>
@@ -515,14 +517,15 @@ function FilterBlock({
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="grid place-items-center rounded-2xl border border-dashed border-border bg-card py-20 text-center">
       <div className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-foreground shadow-soft">
         <Search className="h-6 w-6" />
       </div>
-      <h3 className="mt-4 text-lg font-semibold">No listings found</h3>
+      <h3 className="mt-4 text-lg font-semibold">{t("no_listings_found", "No listings found")}</h3>
       <p className="mt-1 text-sm text-muted-foreground">
-        Try adjusting your filters or search terms.
+        {t("try_adjusting_filters", "Try adjusting your filters or search terms.")}
       </p>
     </div>
   );

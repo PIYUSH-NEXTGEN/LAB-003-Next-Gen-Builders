@@ -55,6 +55,7 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 function ProductDetails() {
+  const { t } = useTranslation();
   const { id } = Route.useParams();
   const { products } = useCatalog();
   const product = products.find((p) => p.id === id);

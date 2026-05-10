@@ -18,6 +18,7 @@ import { CatalogProvider, useCatalog } from "@/lib/catalog";
 import { ItemRequestsProvider } from "@/lib/item-requests-catalog";
 import { BackToTop } from "@/components/back-to-top";
 import { PublicProfileSync } from "@/components/public-profile-sync";
+import "@/i18n/i18n";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {

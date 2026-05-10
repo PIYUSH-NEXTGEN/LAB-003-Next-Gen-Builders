@@ -8,10 +8,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { auth, getFirebaseAuthErrorMessage, googleProvider } from "@/lib/firebase";
 import { syncAuthenticatedUserToMongo } from "@/lib/user-sync";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
@@ -71,8 +73,8 @@ function LoginPage() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-sm"
           >
-            <h1 className="font-display text-3xl font-semibold tracking-tight">Welcome back</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">Sign in to your campus account.</p>
+            <h1 className="font-display text-3xl font-semibold tracking-tight">{t("welcome_back")}</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">{t("sign_in_subtitle")}</p>
 
             <div className="mt-7 grid gap-2">
               <SocialBtn provider="Google" onClick={handleGoogleSignIn} disabled={loading} />
@@ -85,7 +87,7 @@ function LoginPage() {
             <form className="space-y-3" onSubmit={handleEmailSignIn}>
               <Field
                 icon={Mail}
-                label="College email"
+                label={t("college_email")}
                 type="email"
                 placeholder="name@university.edu"
                 autoComplete="email"
@@ -96,7 +98,7 @@ function LoginPage() {
               <div>
                 <Field
                   icon={Lock}
-                  label="Password"
+                  label={t("password")}
                   type={show ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
@@ -115,7 +117,7 @@ function LoginPage() {
                 />
                 <div className="mt-2 text-right">
                   <a href="#" className="text-xs text-primary hover:underline">
-                    Forgot password?
+                    {t("forgot_password")}
                   </a>
                 </div>
               </div>
@@ -125,14 +127,14 @@ function LoginPage() {
                 size="lg"
                 disabled={loading}
               >
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? t("signing_in") : t("sign_in")}
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              {t("dont_have_account")}{" "}
               <Link to="/signup" className="font-medium text-primary hover:underline">
-                Sign up
+                {t("sign_up")}
               </Link>
             </p>
           </motion.div>
@@ -195,6 +197,7 @@ export function SocialBtn({
 }
 
 export function AuthAside() {
+  const { t } = useTranslation();
   return (
     <div className="relative hidden overflow-hidden bg-brand-gradient lg:flex lg:flex-col lg:justify-between lg:p-10 lg:text-primary-foreground">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
@@ -207,11 +210,10 @@ export function AuthAside() {
       <div className="relative max-w-md">
         <Sparkles className="h-6 w-6 opacity-80" />
         <h2 className="mt-4 font-display text-3xl font-semibold leading-tight">
-          The trusted marketplace built exclusively for verified students.
+          {t("auth_aside_title")}
         </h2>
         <p className="mt-3 text-sm opacity-80">
-          Books, gadgets, notes, cycles, hostel essentials — buy and sell with people you can
-          actually meet on campus.
+          {t("auth_aside_desc")}
         </p>
         <div className="mt-8 flex items-center gap-3">
           <div className="flex -space-x-2">

@@ -3,6 +3,8 @@ import { Search, ShoppingBag, Heart, Trash2, Menu, X, ChevronDown, Check } from 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageToggle } from "./language-toggle";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "@/lib/wishlist";
@@ -39,6 +41,7 @@ const links = [
 
 export function Navbar() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -105,7 +108,7 @@ export function Navbar() {
                     : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
                 )}
               >
-                {l.label}
+                {t(l.label.toLowerCase())}
               </Link>
             );
           })}
@@ -129,7 +132,7 @@ export function Navbar() {
                   animate={{ opacity: campus ? 1 : 0.6 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {campus || "Select College"}
+                  {campus || t("select_college")}
                 </motion.span>
                 <motion.div
                   animate={{ rotate: campusOpen ? 180 : 0 }}
@@ -141,7 +144,7 @@ export function Navbar() {
             </PopoverTrigger>
             <PopoverContent align="end" className="w-[280px] p-0">
               <Command>
-                <CommandInput placeholder="Search campus…" />
+                <CommandInput placeholder={t("search_campus")} />
                 <CommandList>
                   <CommandEmpty>No campus found.</CommandEmpty>
                   <CommandGroup heading="Campuses">
@@ -245,7 +248,7 @@ export function Navbar() {
             <>
               <Link to="/login" className="hidden sm:inline-flex">
                 <Button variant="ghost" size="sm">
-                  Sign in
+                  {t("sign_in")}
                 </Button>
               </Link>
               <Link to="/signup" className="hidden sm:inline-flex">
@@ -253,7 +256,7 @@ export function Navbar() {
                   size="sm"
                   className="rounded-full bg-brand-gradient text-primary-foreground shadow-soft hover:opacity-90"
                 >
-                  Get started
+                  {t("get_started")}
                 </Button>
               </Link>
             </>
@@ -281,10 +284,11 @@ export function Navbar() {
                 onClick={handleSignOut}
                 className="hidden rounded-full sm:inline-flex"
               >
-                Sign out
+                {t("sign_out")}
               </Button>
             </>
           )}
+          <LanguageToggle />
           <Button
             variant="ghost"
             size="icon"
@@ -321,7 +325,7 @@ export function Navbar() {
                         : "font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
                     )}
                   >
-                    {l.label}
+                    {t(l.label.toLowerCase())}
                   </Link>
                 );
               })}
@@ -330,22 +334,22 @@ export function Navbar() {
                   <>
                     <Link to="/dashboard" className="flex-1">
                       <Button variant="outline" className="w-full">
-                        Dashboard
+                        {t("dashboard")}
                       </Button>
                     </Link>
                     <Button className="flex-1 w-full bg-brand-gradient" onClick={handleSignOut}>
-                      Sign out
+                      {t("sign_out")}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Link to="/login" className="flex-1">
                       <Button variant="outline" className="w-full">
-                        Sign in
+                        {t("sign_in")}
                       </Button>
                     </Link>
                     <Link to="/signup" className="flex-1">
-                      <Button className="w-full bg-brand-gradient">Get started</Button>
+                      <Button className="w-full bg-brand-gradient">{t("get_started")}</Button>
                     </Link>
                   </>
                 )}

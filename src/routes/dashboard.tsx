@@ -32,10 +32,12 @@ import { buildFallbackUserProfile, useCurrentUserProfile } from "@/lib/user-prof
 import { useAuth } from "@/lib/auth";
 import AccountOverview from "@/components/account-overview";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const profileQuery = useCurrentUserProfile();
@@ -211,9 +213,9 @@ function DashboardPage() {
                 )}
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Welcome back, {displayName}</p>
+                <p className="text-sm text-muted-foreground">{t("welcome_back")}, {displayName}</p>
                 <h1 className="mt-1 font-display text-3xl font-semibold italic tracking-tight sm:text-4xl">
-                  Your dashboard
+                  {t("dashboard")}
                 </h1>
                 <p className="mt-1 text-xs text-muted-foreground">Signed in as {email}</p>
               </div>
@@ -221,7 +223,7 @@ function DashboardPage() {
             <div className="flex flex-wrap gap-2">
               <Link to="/marketplace">
                 <Button variant="outline" className="rounded-full">
-                  Browse marketplace
+                  {t("explore_marketplace")}
                 </Button>
               </Link>
               <Button
@@ -231,7 +233,7 @@ function DashboardPage() {
                 <Plus className="h-4 w-4" /> New listing
               </Button>
               <Button variant="ghost" className="rounded-full" onClick={handleSignOut}>
-                Sign out
+                {t("sign_out")}
               </Button>
             </div>
           </div>
